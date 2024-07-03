@@ -1,5 +1,5 @@
-import 'package:fitness_tracker_app/src/features/onboarding/presentation/screens/widgets/top_container.dart';
-import 'package:fitness_tracker_app/src/shared/shared.dart';
+import 'package:gymApp/src/features/onboarding/presentation/screens/widgets/top_container.dart';
+import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class SeventhView extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:fitness_tracker_app/src/shared/shared.dart';
+import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

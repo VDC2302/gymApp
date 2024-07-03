@@ -1,4 +1,4 @@
-name: fitness_tracker_app
+name: gymApp
 description: "A new Flutter project."
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -38,6 +38,9 @@ dependencies:
   # Import ready-made animations
   lottie: ^3.1.0
   google_fonts: ^6.2.1
+
+  # http
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:

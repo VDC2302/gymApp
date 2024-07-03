@@ -1,10 +1,10 @@
-import 'package:fitness_tracker_app/src/features/auth/presentation/screens/login_screen.dart';
-import 'package:fitness_tracker_app/src/features/auth/presentation/screens/login_signup_screen.dart';
-import 'package:fitness_tracker_app/src/features/auth/presentation/screens/signup_screen.dart';
-import 'package:fitness_tracker_app/src/features/home/presentation/views/main_view.dart';
-import 'package:fitness_tracker_app/src/features/navigation/routes.dart';
-import 'package:fitness_tracker_app/src/features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'package:fitness_tracker_app/src/features/splash/splash_screen.dart';
+import 'package:gymApp/src/features/auth/presentation/screens/login_screen.dart';
+import 'package:gymApp/src/features/auth/presentation/screens/login_signup_screen.dart';
+import 'package:gymApp/src/features/auth/presentation/screens/signup_screen.dart';
+import 'package:gymApp/src/features/home/presentation/views/main_view.dart';
+import 'package:gymApp/src/features/navigation/routes.dart';
+import 'package:gymApp/src/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:gymApp/src/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'nav.dart';

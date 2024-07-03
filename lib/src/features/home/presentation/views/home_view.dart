@@ -1,5 +1,5 @@
-import 'package:fitness_tracker_app/src/shared/shared.dart';
-import 'package:fitness_tracker_app/src/shared/widgets/bounce_in_animation.dart';
+import 'package:gymApp/src/shared/shared.dart';
+import 'package:gymApp/src/shared/widgets/bounce_in_animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';

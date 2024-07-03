@@ -1,5 +1,5 @@
-import 'package:fitness_tracker_app/src/features/navigation/app_navigator.dart';
-import 'package:fitness_tracker_app/src/shared/shared.dart';
+import 'package:gymApp/src/features/navigation/app_navigator.dart';
+import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class AppBackButton extends StatelessWidget {

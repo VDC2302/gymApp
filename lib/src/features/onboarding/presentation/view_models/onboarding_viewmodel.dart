@@ -1,4 +1,4 @@
-import 'package:fitness_tracker_app/src/shared/utils/utils.dart';
+import 'package:gymApp/src/shared/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

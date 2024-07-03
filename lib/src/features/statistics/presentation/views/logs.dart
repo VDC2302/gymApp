@@ -1,5 +1,5 @@
-import 'package:fitness_tracker_app/src/features/statistics/presentation/views/progress_report.dart';
-import 'package:fitness_tracker_app/src/shared/shared.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/progress_report.dart';
+import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/cupertino.dart';
 
 class Logs extends StatelessWidget {

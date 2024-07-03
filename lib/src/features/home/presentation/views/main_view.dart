@@ -1,8 +1,8 @@
-import 'package:fitness_tracker_app/src/features/explore/presentation/views/explore_view.dart';
-import 'package:fitness_tracker_app/src/features/home/presentation/views/home_view.dart';
-import 'package:fitness_tracker_app/src/features/settings/presentation/views/setting_view.dart';
-import 'package:fitness_tracker_app/src/features/statistics/presentation/views/statistics_view.dart';
-import 'package:fitness_tracker_app/src/shared/shared.dart';
+import 'package:gymApp/src/features/explore/presentation/views/explore_view.dart';
+import 'package:gymApp/src/features/home/presentation/views/home_view.dart';
+import 'package:gymApp/src/features/settings/presentation/views/setting_view.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
+import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
