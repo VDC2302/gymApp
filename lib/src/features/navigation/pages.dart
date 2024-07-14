@@ -39,7 +39,7 @@ List<GetPage> authPages = [
   ),
   GetPage(
     name: AuthRoutes.login,
-    page: () => const LoginScreen(),
+    page: () => LoginScreen(),
     transition: Transition.leftToRightWithFade,
     transitionDuration: const Duration(milliseconds: 500),
   ),

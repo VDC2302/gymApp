@@ -4,9 +4,20 @@ import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
-class LoginScreen extends StatelessWidget {
+
+
+class LoginScreen extends StatefulWidget {
+  static String? jwtToken;
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  ApiService apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +46,13 @@ class LoginScreen extends StatelessWidget {
             children: [
               backAndTitle(title: 'Login'),
               YBox(80.dy),
-              const AppTextField(labelText: 'Email'),
-              const AppTextField(
+              AppTextField(
+                  controller: usernameController,
+                  labelText: 'Username'
+              ),
+
+              AppTextField(
+                controller: passwordController,
                 labelText: 'Password',
                 isPasswordField: true,
               ),
@@ -52,9 +68,18 @@ class LoginScreen extends StatelessWidget {
               AppButton(
                 title: 'Continue',
                 onTap: () {
-                  AppNavigator.pushNamed(HomeRoutes.main);
+                  apiService.login(usernameController.text.toString(), passwordController.text.toString());
                 },
               ),
+              YBox(74.dy),
+              // StartAlignedText(
+              //   text: 'Username or Password not correct!',
+              //   style: TextStyle(
+              //   color: appColors.error,
+              //   fontSize: 15.sp,
+              //   fontWeight: FontWeight.w800,
+              //   ),
+              // ),
               YBox(74.dy),
               const OtherLoginOptionsWidget(),
             ],

@@ -1,8 +1,10 @@
+import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
 class SettingsView extends HookWidget {
   const SettingsView({super.key});
@@ -10,19 +12,44 @@ class SettingsView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final switchVal = useState<bool>(false);
+    final isLoading = useState(true);
+    final errorMessage = useState<String?>(null);
+    final profileData = useState<Map<String, dynamic>?>(null);
+
+    useEffect((){
+      Future<void> getProfile() async{
+        ApiService apiService = ApiService();
+        try{
+          final data = await apiService.getProfile();
+          profileData.value = data;
+        }catch(e){
+          errorMessage.value = 'Failed to load profile: $e';
+        }finally{
+          isLoading.value = false;
+        }
+      }
+      getProfile();
+      return null;
+    }, []);
 
     return Scaffold(
       backgroundColor: appColors.lightGrey,
       body: Column(
         children: [
           _buildAppBar(),
-          _buildProfileContainer()
+          isLoading.value
+              ? const Center(child: CircularProgressIndicator())
+              : errorMessage.value != null
+              ? Center(child: Text(errorMessage.value!, style: const TextStyle(color: Colors.red)))
+              : profileData.value != null
+              ? _buildProfileContainer(profileData.value!)
+              : const Center(child: Text('Profile data not available')),
         ],
       ),
     );
   }
 
-  Widget _buildProfileContainer() {
+  Widget _buildProfileContainer(Map<String, dynamic> data) {
     return Container(
       height: 79.dy,
       width: double.infinity,
@@ -49,7 +76,7 @@ class SettingsView extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Get Go',
+                  '${data['firstName']} ${data['lastName']}',
                   style: GoogleFonts.lato(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
@@ -57,7 +84,7 @@ class SettingsView extends HookWidget {
                   ),
                 ),
                 Text(
-                  'getgo@gmail.com',
+                  '${data['username']}',
                   style: GoogleFonts.lato(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,

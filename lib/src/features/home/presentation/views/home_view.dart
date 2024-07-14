@@ -4,11 +4,46 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
 enum HomeAct { first, second, third, fourth }
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
+
+  @override
+  _HomeViewState createState() => _HomeViewState();
+}
+
+  // Future<void> fetchFullName() async{
+  //   var fullname = await fetchData();
+  // }
+class _HomeViewState extends State<HomeView> {
+  String? _fullName;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _getFullName();
+  }
+
+  Future<void> _getFullName() async {
+    ApiService apiService = ApiService();
+    try {
+      final fullName = await apiService.getFullName();
+      setState(() {
+        _fullName = fullName;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load full name: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +61,9 @@ class HomeView extends StatelessWidget {
                 children: [
                   Text.rich(
                     TextSpan(
-                      text: 'Hello GetGo,\n',
+                      text: _isLoading
+                          ? 'Loading...'
+                          : ('$_fullName\n' ?? 'Failed to load full name'),
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
