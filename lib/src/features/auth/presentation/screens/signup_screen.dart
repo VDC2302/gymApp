@@ -4,37 +4,55 @@ import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
-final usernameController = TextEditingController();
-final passwordController = TextEditingController();
-final firstNameController = TextEditingController();
-final lastNameController = TextEditingController();
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
-void register(String username, password, firstName, lastName) async{
-  try{
-    Response response = await post(Uri.parse('http://localhost:8080/api/v1/common/registration'),
-        body: {
-          'firstName': firstName,
-          'lastName': lastName,
-          'username' : username,
-          'password' : password,
-        });
-    if(response.statusCode == 200){
-      print('Register Successful');
-      AppNavigator.pushNamed(AuthRoutes.loginOrSignUp);
-
-    }else{
-      print('login failed');
-      int scode = response.statusCode;
-    }
-  }catch(e){
-    print(e.toString());
-  }
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key});
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String? _selectedGender;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _register() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    ApiService apiService = ApiService();
+    final result = await apiService.register(
+      _firstNameController.text,
+      _lastNameController.text,
+      _usernameController.text,
+      _passwordController.text,
+      _selectedGender,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result != null && result['success'] == true) {
+      Navigator.pushReplacementNamed(context, AuthRoutes.loginOrSignUp);
+    } else {
+      setState(() {
+        if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
+          _errorMessage = result['errors'][0]['message'] ?? 'An unknown error occurred';
+        } else {
+          _errorMessage = result?['message'] ?? 'An unknown error occurred';
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,48 +81,74 @@ class SignUpScreen extends StatelessWidget {
             children: [
               backAndTitle(title: 'Sign up'),
               AppTextField(
-                  controller: firstNameController,
+                  controller: _firstNameController,
                   labelText: 'First Name'
               ),
 
               AppTextField(
-                  controller: lastNameController,
+                  controller: _lastNameController,
                   labelText: 'Last Name'
               ),
 
               AppTextField(
-                  controller: usernameController,
+                  controller: _usernameController,
                   labelText: 'Username'
               ),
 
               AppTextField(
-                controller: passwordController,
+                controller: _passwordController,
                 labelText: 'Password',
                 isPasswordField: true,
               ),
 
-              // StartAlignedText(
-              //   text: 'Forgot password?',
-              //   style: TextStyle(
-              //     color: appColors.white,
-              //     fontSize: 13.sp,
-              //     fontWeight: FontWeight.w800,
-              //   ),
-              // ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedGender,
+                  hint: const Text(
+                      'Select Gender',
+                      style: TextStyle(color: Colors.white),
+                  ),
+                  items: ['Male', 'Female', 'Other'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedGender = newValue;
+                    });
+                  },
+                ),
+              ),
+
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
 
               YBox(74.dy),
               AppButton(
                 title: 'Create Account',
-                onTap: () {
-                  AppNavigator.pushNamed(AuthRoutes.onboarding);
-                },
+                onTap: _register,
               ),
-              YBox(74.dy),
-              const OtherLoginOptionsWidget()
             ],
           ),
         ],
       ),
     );
+  }
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

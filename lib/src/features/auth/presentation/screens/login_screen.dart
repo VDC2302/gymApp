@@ -17,7 +17,36 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  ApiService apiService = ApiService();
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _login() async{
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    ApiService apiService = ApiService();
+    final result = await apiService.login(_usernameController.text, _passwordController.text);
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result != null && result['success'] == true) {
+      Navigator.pushReplacementNamed(context, HomeRoutes.main);
+    }else{
+      setState(() {
+        if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
+          _errorMessage = result['errors'][0]['message'] ?? 'An unknown error occurred';
+        }else{
+          _errorMessage = result?['message'] ?? 'An unknown error occurred';
+        }
+      });
+    }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +76,12 @@ class _LoginScreenState extends State<LoginScreen> {
               backAndTitle(title: 'Login'),
               YBox(80.dy),
               AppTextField(
-                  controller: usernameController,
+                  controller: _usernameController,
                   labelText: 'Username'
               ),
 
               AppTextField(
-                controller: passwordController,
+                controller: _passwordController,
                 labelText: 'Password',
                 isPasswordField: true,
               ),
@@ -65,11 +94,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               YBox(74.dy),
+
+              if (_errorMessage != null)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               AppButton(
                 title: 'Continue',
-                onTap: () {
-                  apiService.login(usernameController.text.toString(), passwordController.text.toString());
-                },
+                onTap: _login,
               ),
               YBox(74.dy),
               // StartAlignedText(

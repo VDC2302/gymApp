@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Wemove!',
+                'GetGo App!',
                 style: TextStyle(
                   color: appColors.white,
                   fontSize: 32.sp,

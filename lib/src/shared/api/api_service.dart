@@ -1,16 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_svg/svg.dart';
-import 'package:flutter/material.dart';
-import 'package:gymApp/src/features/auth/presentation/screens/signup_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
-
-final usernameController = TextEditingController();
-final passwordController = TextEditingController();
 
 class Token {
   final String jwtToken;
@@ -36,8 +29,8 @@ class Token {
 class ApiService{
   Future<void> storeToken(Token token) async{
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('jwtToken', token.jwtToken);
-    prefs.setString('refreshToken', token.refreshToken);
+    prefs.setString('jwtToken', token.jwtToken) ?? [];
+    prefs.setString('refreshToken', token.refreshToken) ?? [];
   }
 
   Future<Token?> getToken() async{
@@ -79,43 +72,57 @@ class ApiService{
     }
   }
 
-  Future<void> login(String username, password) async{
+  Future<Map<String, dynamic>?> login(String username, String password) async{
     try{
-      var data ={'username' : username, 'password' : password};
-      print(json.encode(data));
+      var data = {'username': username, 'password': password};
       final response = await http.post(Uri.parse('http://10.0.2.2:8080/api/v1/common/authenticate'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: json.encode(data));
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(data));
 
       if(response.statusCode == 200){
-        print('Login successful.');
-        Map<String, dynamic> jsonMap = jsonDecode(response.body);
+        Map<String, dynamic> jsonMap = json.decode(response.body);
         Token token = Token.fromJson(jsonMap);
-        await storeToken(token); //store token
-
-        print(token.jwtToken);
-
-        final response1 = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
-          headers: {
-            'Authorization': 'Bearer ${token.jwtToken}',
-          },
-        );
-        if(response1.statusCode == 202){
-          Map<String, dynamic> responseData = jsonDecode(response1.body);
-          print("profile: " + response1.body);
-        }else{
-          print(response1.statusCode);
-        }
-        AppNavigator.pushNamed(HomeRoutes.main);
-
+        await storeToken(token);
+        return{'success': true};
       }else{
-        print('login failed');
-        int scode = response.statusCode;
+        Map<String, dynamic> errorResponse = json.decode(response.body);
+        return{
+          'success': false,
+          'errors': [errorResponse]
+        };
       }
     }catch(e){
-      print(e.toString());
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+
+  Future<Map<String, dynamic>?> register (String firstName, String lastName, String username, String password, String? gender) async{
+    try{
+      var data = {'firstName': firstName, 'lastName': lastName, 'username': username, 'password': password, 'gender': gender};
+      if (gender != null) {
+        data['gender'] = gender;
+      }
+      final response = await http.post(Uri.parse('http://10.0.2.2:8080/api/v1/common/registration'),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+        body: json.encode(data)
+      );
+
+      if (response.statusCode == 201) {
+        return {'success': true};
+      } else {
+        Map<String, dynamic> errorResponse = jsonDecode(response.body);
+        return {
+          'success': false,
+          'errors': [errorResponse],
+        };
+      }
+    }catch(e){
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -153,6 +160,35 @@ class ApiService{
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         return responseData;
       }
+    }
+  }
+
+  Future<Map<String, dynamic>?> progression(double weight, String date) async{
+    try{
+      final token = await getToken();
+      if(token != null) {
+        var data = {'weight': weight, 'date': date};
+        final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${token.jwtToken}',
+            },
+            body: json.encode(data),
+        );
+
+        if(response.statusCode == 200){
+          return json.decode(response.body);
+        }else{
+          Map<String, dynamic> errorResponse = json.decode(response.body);
+          return{'success': false, 'message': [errorResponse]};
+        }
+
+
+      }else{
+        throw Exception('Token not found');
+      }
+    }catch(e){
+
     }
   }
 }
