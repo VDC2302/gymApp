@@ -1,49 +1,64 @@
+import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ProgressReport extends StatelessWidget {
+class ProgressReport extends StatefulWidget {
   const ProgressReport({super.key});
 
   @override
+  _ProgressReportState createState() => _ProgressReportState();
+}
+
+class _ProgressReportState extends State<ProgressReport> {
+  ApiService apiService = ApiService();
+  double? _weight;
+  double? _chest;
+  double? _waist;
+  double? _hips;
+  String _weightDate = '';
+  String _chestDate = '';
+  String _waistDate = '';
+  String _hipsDate = '';
+  Map<String, TextEditingController> controllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _getTrackingValues();
+  }
+
+  Future<void> _getTrackingValues() async {
+    try {
+      final weightData = await apiService.getTrackingValue('WEIGHT');
+      final chestData = await apiService.getTrackingValue('CHEST');
+      final waistData = await apiService.getTrackingValue('WAIST');
+      final hipsData = await apiService.getTrackingValue('HIPS');
+
+      setState(() {
+        _weight = weightData?['value'];
+        _chest = chestData?['value'];
+        _waist = waistData?['value'];
+        _hips = hipsData?['value'];
+        _weightDate = weightData?['createdDate'];
+        _chestDate = chestData?['createdDate'];
+        _waistDate = waistData?['createdDate'];
+        _hipsDate = hipsData?['createdDate'];
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    List<String> days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
+    // List<String> days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 15.dx),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SparkleContainer(
-                  height: 157.dy,
-                  width: 142.dx,
-                  isBgWhite: true,
-                  fit: BoxFit.cover,
-                  padding: EdgeInsets.all(10.dx),
-                  decoration: BoxDecoration(
-                    color: appColors.white,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: _weightContContent(),
-                ),
-                SparkleContainer(
-                  height: 157.dy,
-                  width: 142.dx,
-                  fit: BoxFit.cover,
-                  padding: EdgeInsets.all(10.dx),
-                  decoration: BoxDecoration(
-                    color: appColors.green,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: _weightContContent(isWeight: false),
-                ),
-              ],
-            ),
-            YBox(30.dy),
-
             SparkleContainer(
               height: 148.dy,
               isBgWhite: true,
@@ -62,21 +77,11 @@ class ProgressReport extends StatelessWidget {
                           children: [
                             Text.rich(
                               TextSpan(
-                                text: 'Weight loss',
+                                text: 'Weight',
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w400,
                                 ),
-                                children: [
-                                  TextSpan(
-                                    text: '(Active)',
-                                    style: TextStyle(
-                                      color: appColors.green,
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
                             const Spacer(),
@@ -88,7 +93,7 @@ class ProgressReport extends StatelessWidget {
                           children: [
                             Text.rich(
                               TextSpan(
-                                text: '88.3',
+                                text: _weight != null ? '$_weight' : '0',
                                 style: TextStyle(
                                   fontSize: 24.sp,
                                   fontWeight: FontWeight.w600,
@@ -105,7 +110,7 @@ class ProgressReport extends StatelessWidget {
                                   WidgetSpan(
                                     child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      MainAxisAlignment.start,
                                       children: [
                                         Container(
                                           height: 9.dy,
@@ -118,14 +123,6 @@ class ProgressReport extends StatelessWidget {
                                           color: Colors.transparent,
                                         ),
                                       ],
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: ' 3.3 kg left',
-                                    style: GoogleFonts.inter(
-                                      color: appColors.grey33,
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w300,
                                     ),
                                   ),
                                 ],
@@ -152,6 +149,41 @@ class ProgressReport extends StatelessWidget {
               ),
             ),
             YBox(30.dy),
+            SparkleContainer(
+              height: 157.dy,
+              fit: BoxFit.cover,
+              padding: EdgeInsets.all(10.dx),
+              decoration: BoxDecoration(
+                color: appColors.green,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: _chestContent(),
+            ),
+            YBox(30.dy),
+            SparkleContainer(
+              height: 157.dy,
+              isBgWhite: true,
+              fit: BoxFit.cover,
+              padding: EdgeInsets.all(10.dx),
+              decoration: BoxDecoration(
+                color: appColors.white,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: _waistContent(),
+            ),
+            YBox(30.dy),
+            SparkleContainer(
+              height: 157.dy,
+              fit: BoxFit.cover,
+              padding: EdgeInsets.all(10.dx),
+              decoration: BoxDecoration(
+                color: appColors.green,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: _hipsContent(),
+            ),
+            YBox(30.dy),
+
           ],
         ),
       ),
@@ -169,7 +201,7 @@ class ProgressReport extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(
-        '88.3kg',
+        _weight != null ? '$_weight kg' : '0 kg',
         style: GoogleFonts.inter(
           fontSize: 7.sp,
           fontWeight: FontWeight.w500,
@@ -212,7 +244,7 @@ class ProgressReport extends StatelessWidget {
     );
   }
 
-  Widget _weightContContent({bool isWeight = true}) {
+  Widget _chestContent() {
     return Column(
       children: [
         YBox(10.dy),
@@ -220,14 +252,14 @@ class ProgressReport extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(
-              text: isWeight ? 'Weight(kg)' : 'Calories(kcal)',
+              text: 'Chest',
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-              color: isWeight ? null : appColors.white,
+              color: appColors.white,
             ),
             SvgAsset(
               assetName: arrowRight,
-              color: isWeight ? null : appColors.white,
+              color: appColors.white,
               height: 16.dx,
             ),
           ],
@@ -236,23 +268,21 @@ class ProgressReport extends StatelessWidget {
         Row(
           children: [
             AppText(
-              text: isWeight ? '88.3' : '652',
+              text: _chest != null ? '$_chest' : '0',
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: isWeight ? null : appColors.white,
+              color: appColors.white,
             ),
             const Spacer(),
-            isWeight
-                ? SvgAsset(assetName: kgIcon)
-                : SvgAsset(assetName: fireIcon),
+            SvgAsset(assetName: kgIcon),
           ],
         ),
         AppText(
           isStartAligned: T,
-          text: isWeight ? 'OCTOBER 25' : 'in Total',
+          text: _chestDate != null ? '$_chestDate' : 'null',
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
-          color: isWeight ? null : appColors.white,
+          color: appColors.white,
         ),
         YBox(10.dy),
         const Spacer(),
@@ -261,23 +291,217 @@ class ProgressReport extends StatelessWidget {
           children: [
             AppText(
               isStartAligned: T,
-              text: isWeight ? '30 Days' : 'This week!',
+              text: '30 Days',
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-              color: isWeight ? null : appColors.white,
+              color: appColors.white,
             ),
-            !isWeight
-                ? AppText(
-                    text: '0',
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w400,
-                    color: appColors.white,
-                  )
-                : const SizedBox.shrink()
+            AppText(
+              text: '0',
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w400,
+              color: appColors.white,
+            )
           ],
         ),
       ],
     );
   }
+
+  Widget _waistContent() {
+    return Column(
+      children: [
+        YBox(10.dy),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              text: 'Waist',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              // color: appColors.white,
+            ),
+            SvgAsset(
+              assetName: arrowRight,
+              // color: appColors.white,
+              height: 16.dx,
+            ),
+          ],
+        ),
+        const Spacer(),
+        Row(
+          children: [
+            AppText(
+              text: _waist != null ? '$_waist' : '0',
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              // color: appColors.white,
+            ),
+            const Spacer(),
+                SvgAsset(assetName: fireIcon),
+          ],
+        ),
+        AppText(
+          isStartAligned: T,
+          text: _waistDate != null ? '$_waistDate' : 'null',
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w400,
+          // color: appColors.white,
+        ),
+        YBox(10.dy),
+        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              isStartAligned: T,
+              text: '30 Days',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              // color: appColors.white,
+            ),
+                AppText(
+              text: '0',
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w400,
+              // color: appColors.white,
+            )
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _hipsContent() {
+    return Column(
+      children: [
+        YBox(10.dy),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              text: 'Hips',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: appColors.white,
+            ),
+            SvgAsset(
+              assetName: arrowRight,
+              color: appColors.white,
+              height: 16.dx,
+            ),
+          ],
+        ),
+        const Spacer(),
+        Row(
+          children: [
+            AppText(
+              text: _hips != null ? '$_hips' : '0',
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              color: appColors.white,
+            ),
+            const Spacer(),
+            SvgAsset(assetName: fireIcon),
+          ],
+        ),
+        AppText(
+          isStartAligned: T,
+          text: _hipsDate != null ? '$_hipsDate' : 'null',
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w400,
+          color: appColors.white,
+        ),
+        YBox(10.dy),
+        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              isStartAligned: T,
+              text: '30 Days',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: appColors.white,
+            ),
+            AppText(
+              text: '0',
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w400,
+              color: appColors.white,
+            )
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Widget _weightContContent({bool isWeight = true}) {
+  //   return Column(
+  //     children: [
+  //       YBox(10.dy),
+  //       Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //         children: [
+  //           AppText(
+  //             text: isWeight ? 'Weight(kg)' : 'Calories(kcal)',
+  //             fontSize: 14.sp,
+  //             fontWeight: FontWeight.w400,
+  //             color: isWeight ? null : appColors.white,
+  //           ),
+  //           SvgAsset(
+  //             assetName: arrowRight,
+  //             color: isWeight ? null : appColors.white,
+  //             height: 16.dx,
+  //           ),
+  //         ],
+  //       ),
+  //       const Spacer(),
+  //       Row(
+  //         children: [
+  //           AppText(
+  //             text: isWeight ? '88.3' : '652',
+  //             fontSize: 20.sp,
+  //             fontWeight: FontWeight.w600,
+  //             color: isWeight ? null : appColors.white,
+  //           ),
+  //           const Spacer(),
+  //           isWeight
+  //               ? SvgAsset(assetName: kgIcon)
+  //               : SvgAsset(assetName: fireIcon),
+  //         ],
+  //       ),
+  //       AppText(
+  //         isStartAligned: T,
+  //         text: isWeight ? 'OCTOBER 25' : 'in Total',
+  //         fontSize: 14.sp,
+  //         fontWeight: FontWeight.w400,
+  //         color: isWeight ? null : appColors.white,
+  //       ),
+  //       YBox(10.dy),
+  //       const Spacer(),
+  //       Row(
+  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //         children: [
+  //           AppText(
+  //             isStartAligned: T,
+  //             text: isWeight ? '30 Days' : 'This week!',
+  //             fontSize: 14.sp,
+  //             fontWeight: FontWeight.w400,
+  //             color: isWeight ? null : appColors.white,
+  //           ),
+  //           !isWeight
+  //               ? AppText(
+  //                   text: '0',
+  //                   fontSize: 24.sp,
+  //                   fontWeight: FontWeight.w400,
+  //                   color: appColors.white,
+  //                 )
+  //               : const SizedBox.shrink()
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 }
 

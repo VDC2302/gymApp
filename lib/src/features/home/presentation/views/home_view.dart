@@ -15,9 +15,6 @@ class HomeView extends StatefulWidget {
   _HomeViewState createState() => _HomeViewState();
 }
 
-  // Future<void> fetchFullName() async{
-  //   var fullname = await fetchData();
-  // }
 class _HomeViewState extends State<HomeView> {
   String? _fullName;
   bool _isLoading = true;

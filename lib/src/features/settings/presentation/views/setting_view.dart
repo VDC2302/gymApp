@@ -84,7 +84,7 @@ class SettingsView extends HookWidget {
                   ),
                 ),
                 Text(
-                  '${data['username']}',
+                  '${data['gender']}',
                   style: GoogleFonts.lato(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
