@@ -21,7 +21,11 @@ class _ProgressReportState extends State<ProgressReport> {
   String _chestDate = '';
   String _waistDate = '';
   String _hipsDate = '';
-  Map<String, TextEditingController> controllers = {};
+
+  TextEditingController _weightController = TextEditingController();
+  TextEditingController _chestController = TextEditingController();
+  TextEditingController _waistController = TextEditingController();
+  TextEditingController _hipsController = TextEditingController();
 
   @override
   void initState() {
@@ -47,13 +51,24 @@ class _ProgressReportState extends State<ProgressReport> {
         _hipsDate = hipsData?['createdDate'];
       });
     } catch (e) {
-      print(e);
+      print(e.toString());
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context, String initialDate, ValueChanged<String> onDateSelected) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isNotEmpty ? DateTime.parse(initialDate) : DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      onDateSelected(picked.toIso8601String().split('T').first);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // List<String> days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 15.dx),
@@ -144,7 +159,21 @@ class _ProgressReportState extends State<ProgressReport> {
                     ),
                   ),
                   const Spacer(),
-                  _buildRecordButton(),
+                  _buildRecordButton(
+                      title: 'Weight',
+                      valueController: _weightController,
+                      date: _weightDate,
+                      onSave: (newValue, newDate) async {
+                        await apiService.postTrackingValue(newValue, 'WEIGHT',
+                            newDate.isEmpty ? DateTime.now().toString().split(
+                                ' ')[0] : newDate);
+
+                        setState(() {
+                          _weightController.text = newValue;
+                          _weightDate = newDate;
+                        });
+                      },
+                  ),
                 ],
               ),
             ),
@@ -183,7 +212,6 @@ class _ProgressReportState extends State<ProgressReport> {
               child: _hipsContent(),
             ),
             YBox(30.dy),
-
           ],
         ),
       ),
@@ -211,19 +239,154 @@ class _ProgressReportState extends State<ProgressReport> {
     );
   }
 
-  Container _buildRecordButton() {
-    return Container(
-      height: 35.35.dy,
-      width: 173.9.dx,
+  Widget _buildEditableContainer({
+    required String title,
+    required TextEditingController valueController,
+    required String date,
+    required VoidCallback onEdit,
+  }) {
+    return SparkleContainer(
+      height: 157.dy,
+      isBgWhite: true,
+      padding: EdgeInsets.all(10.dx).copyWith(right: 2),
       decoration: BoxDecoration(
-        color: appColors.yellow,
-        borderRadius: BorderRadius.circular(16),
+        color: appColors.white,
+        borderRadius: BorderRadius.circular(5),
       ),
-      child: Center(
-        child: AppText(
-          text: 'Record',
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w600,
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 5.dx),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        text: title,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SvgAsset(assetName: diagonalArrows),
+                  ],
+                ),
+                YBox(10.dy),
+                Text('Value: ${valueController.text}'),
+                YBox(10.dy),
+                Text('Date: $date'),
+              ],
+            ),
+          ),
+          const Spacer(),
+          ElevatedButton(
+            onPressed: onEdit,
+            child: Text('Edit'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog({
+    required BuildContext context,
+    required String title,
+    required TextEditingController valueController,
+    required String initialDate,
+    required ValueChanged<String> onDateSelected,
+    required Future<void> Function(String value, String date) onSave,
+  }) async {
+    TextEditingController dateController = TextEditingController(text: initialDate);
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit $title'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: valueController,
+                decoration: InputDecoration(labelText: '$title Value'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: dateController,
+                decoration: InputDecoration(labelText: 'Date'),
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+                  if (pickedDate != null) {
+                    dateController.text = pickedDate.toString().split(' ')[0];
+                    onDateSelected(dateController.text);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Save'),
+              onPressed: () async {
+                await onSave(valueController.text, dateController.text);
+                await _getTrackingValues();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  InkWell _buildRecordButton({
+    required String title,
+    required TextEditingController valueController,
+    required String date,
+    required Future<void> Function(String value, String date) onSave,
+  }) {
+    return InkWell(
+      onTap: () {
+        _showEditDialog(
+          context: context,
+          title: title,
+          valueController: valueController,
+          initialDate: date,
+          onDateSelected: (newDate) {
+            setState(() {
+              date = newDate;
+            });
+          },
+          onSave: onSave,
+        );
+      },
+      child: Container(
+        height: 35.35.dy,
+        width: 173.9.dx,
+        decoration: BoxDecoration(
+          color: appColors.yellow,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: AppText(
+            text: 'Edit',
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -286,23 +449,20 @@ class _ProgressReportState extends State<ProgressReport> {
         ),
         YBox(10.dy),
         const Spacer(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              isStartAligned: T,
-              text: '30 Days',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: appColors.white,
-            ),
-            AppText(
-              text: '0',
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              color: appColors.white,
-            )
-          ],
+        _buildRecordButton(
+          title: 'Chest',
+          valueController: _weightController,
+          date: _weightDate,
+          onSave: (newValue, newDate) async {
+            await apiService.postTrackingValue(newValue, 'CHEST',
+                newDate.isEmpty ? DateTime.now().toString().split(
+                    ' ')[0] : newDate);
+
+            setState(() {
+              _weightController.text = newValue;
+              _weightDate = newDate;
+            });
+          },
         ),
       ],
     );
@@ -350,23 +510,20 @@ class _ProgressReportState extends State<ProgressReport> {
         ),
         YBox(10.dy),
         const Spacer(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              isStartAligned: T,
-              text: '30 Days',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              // color: appColors.white,
-            ),
-                AppText(
-              text: '0',
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              // color: appColors.white,
-            )
-          ],
+        _buildRecordButton(
+          title: 'Waist',
+          valueController: _weightController,
+          date: _weightDate,
+          onSave: (newValue, newDate) async {
+            await apiService.postTrackingValue(newValue, 'WAIST',
+                newDate.isEmpty ? DateTime.now().toString().split(
+                    ' ')[0] : newDate);
+
+            setState(() {
+              _weightController.text = newValue;
+              _weightDate = newDate;
+            });
+          },
         ),
       ],
     );
@@ -414,94 +571,23 @@ class _ProgressReportState extends State<ProgressReport> {
         ),
         YBox(10.dy),
         const Spacer(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              isStartAligned: T,
-              text: '30 Days',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: appColors.white,
-            ),
-            AppText(
-              text: '0',
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w400,
-              color: appColors.white,
-            )
-          ],
+        _buildRecordButton(
+          title: 'Hips',
+          valueController: _weightController,
+          date: _weightDate,
+          onSave: (newValue, newDate) async {
+            await apiService.postTrackingValue(newValue, 'HIPS',
+                newDate.isEmpty ? DateTime.now().toString().split(
+                    ' ')[0] : newDate);
+
+            setState(() {
+              _weightController.text = newValue;
+              _weightDate = newDate;
+            });
+          },
         ),
       ],
     );
   }
-
-  // Widget _weightContContent({bool isWeight = true}) {
-  //   return Column(
-  //     children: [
-  //       YBox(10.dy),
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           AppText(
-  //             text: isWeight ? 'Weight(kg)' : 'Calories(kcal)',
-  //             fontSize: 14.sp,
-  //             fontWeight: FontWeight.w400,
-  //             color: isWeight ? null : appColors.white,
-  //           ),
-  //           SvgAsset(
-  //             assetName: arrowRight,
-  //             color: isWeight ? null : appColors.white,
-  //             height: 16.dx,
-  //           ),
-  //         ],
-  //       ),
-  //       const Spacer(),
-  //       Row(
-  //         children: [
-  //           AppText(
-  //             text: isWeight ? '88.3' : '652',
-  //             fontSize: 20.sp,
-  //             fontWeight: FontWeight.w600,
-  //             color: isWeight ? null : appColors.white,
-  //           ),
-  //           const Spacer(),
-  //           isWeight
-  //               ? SvgAsset(assetName: kgIcon)
-  //               : SvgAsset(assetName: fireIcon),
-  //         ],
-  //       ),
-  //       AppText(
-  //         isStartAligned: T,
-  //         text: isWeight ? 'OCTOBER 25' : 'in Total',
-  //         fontSize: 14.sp,
-  //         fontWeight: FontWeight.w400,
-  //         color: isWeight ? null : appColors.white,
-  //       ),
-  //       YBox(10.dy),
-  //       const Spacer(),
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           AppText(
-  //             isStartAligned: T,
-  //             text: isWeight ? '30 Days' : 'This week!',
-  //             fontSize: 14.sp,
-  //             fontWeight: FontWeight.w400,
-  //             color: isWeight ? null : appColors.white,
-  //           ),
-  //           !isWeight
-  //               ? AppText(
-  //                   text: '0',
-  //                   fontSize: 24.sp,
-  //                   fontWeight: FontWeight.w400,
-  //                   color: appColors.white,
-  //                 )
-  //               : const SizedBox.shrink()
-  //         ],
-  //       ),
-  //     ],
-  //   );
-  // }
 }
 

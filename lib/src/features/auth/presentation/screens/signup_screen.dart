@@ -25,7 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _register() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
+      _errorMessage = '';
     });
 
     ApiService apiService = ApiService();
@@ -46,9 +46,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } else {
       setState(() {
         if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
-          _errorMessage = result['errors'][0]['message'] ?? 'An unknown error occurred';
+          _errorMessage = result['errors'];
         } else {
-          _errorMessage = result?['message'] ?? 'An unknown error occurred';
+          _errorMessage = result?['errors'];
         }
       });
     }

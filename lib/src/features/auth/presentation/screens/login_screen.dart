@@ -38,11 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result != null && result['success'] == true) {
       Navigator.pushReplacementNamed(context, HomeRoutes.main);
     }else{
+      print(result);
       setState(() {
         if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
-          _errorMessage = result['errors'][0]['message'] ?? 'An unknown error occurred';
+          _errorMessage = result['errors'];
         }else{
-          _errorMessage = result?['message'] ?? 'An unknown error occurred';
+          _errorMessage = result?['errors'];
         }
       });
     }
@@ -117,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               //   ),
               // ),
               YBox(74.dy),
-              const OtherLoginOptionsWidget(),
+              // const OtherLoginOptionsWidget(),
             ],
           ),
         ],

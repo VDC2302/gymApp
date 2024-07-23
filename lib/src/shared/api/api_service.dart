@@ -87,10 +87,11 @@ class ApiService{
         await storeToken(token);
         return{'success': true};
       }else{
-        Map<String, dynamic> errorResponse = json.decode(response.body);
+        List<dynamic> errorResponse = json.decode(response.body);
+        String errorMessage = errorResponse.isNotEmpty ? errorResponse[0]['message'] : 'An unknown error occurred';
         return{
           'success': false,
-          'errors': [errorResponse]
+          'errors': errorMessage
         };
       }
     }catch(e){
@@ -115,10 +116,11 @@ class ApiService{
       if (response.statusCode == 201) {
         return {'success': true};
       } else {
-        Map<String, dynamic> errorResponse = jsonDecode(response.body);
+        List<dynamic> errorResponse = jsonDecode(response.body);
+        String errorMessage = errorResponse.isNotEmpty ? errorResponse[0]['message'] : 'An unknown error occurred';
         return {
           'success': false,
-          'errors': [errorResponse],
+          'errors': errorMessage,
         };
       }
     }catch(e){
@@ -184,11 +186,11 @@ class ApiService{
     }
   }
 
-  Future<Map<String, dynamic>?> postTrackingValue(double value, String trackingType) async {
+  Future<void> postTrackingValue(String value, String trackingType, String date) async {
     try {
       final token = await getToken();
       if (token != null) {
-        var data = {'value': value, 'trackingType': trackingType};
+        var data = {'value': value, 'trackingType': trackingType, 'date': date};
         final response = await http.post(
           Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
           headers: {
@@ -206,15 +208,15 @@ class ApiService{
       //   }
       // } else {
       //   throw Exception('Token not found');
-        if (response.statusCode != 200) {
-          throw Exception('Failed to update data for tracking type');
+        if (response.statusCode != 202) {
+          throw Exception('Failed to update data for $trackingType');
         }
       }
       else{
         throw Exception('Token not found');
       }
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      print(e.toString());
     }
   }
 
@@ -230,13 +232,14 @@ class ApiService{
       if(response.statusCode == 202){
         final List<dynamic> responseData = json.decode(response.body);
 
-        final item = responseData.firstWhere(
-              (item) => item['trackingType'] == trackingType,
-          orElse: () => null,
-        );
+        final List<dynamic> item = responseData.where(
+              (item) => item['trackingType'] == trackingType).toList();
 
-        if (item != null) {
-          return item;
+        if(item.isNotEmpty){
+          final Map<String, dynamic> latestItem = item.reduce(
+              (a,b) => a['id'] > b['id'] ? a : b,
+          );
+          return latestItem;
         } else {
           throw Exception('Tracking type not found');
         }
