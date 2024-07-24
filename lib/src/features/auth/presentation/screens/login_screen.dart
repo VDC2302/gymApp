@@ -40,10 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }else{
       print(result);
       setState(() {
-        if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
-          _errorMessage = result['errors'];
+        if (result != null && result['message'] != null && result['message'].isNotEmpty) {
+          _errorMessage = result['message'];
         }else{
-          _errorMessage = result?['errors'];
+          _errorMessage = result?['message'];
         }
       });
     }
@@ -61,13 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
             splashImage,
             fit: BoxFit.fitHeight,
           ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: SvgPicture.asset(
-              sparkleEffect,
-              fit: BoxFit.fitHeight,
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(4.0),
+          //   child: SvgPicture.asset(
+          //     sparkleEffect,
+          //     fit: BoxFit.fitHeight,
+          //   ),
+          // ),
           AppColumn(
             height: Dims.deviceSize.height,
             width: Dims.deviceSize.width,

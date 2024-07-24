@@ -51,6 +51,12 @@ class ApiService{
     AppNavigator.pushNamed(AuthRoutes.loginOrSignUp);
   }
 
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jwtToken = prefs.getString('jwtToken');
+    return jwtToken != null;
+  }
+
   Future<void> fetchData() async{
     Token? token = await getToken();
 
@@ -87,11 +93,20 @@ class ApiService{
         await storeToken(token);
         return{'success': true};
       }else{
-        List<dynamic> errorResponse = json.decode(response.body);
-        String errorMessage = errorResponse.isNotEmpty ? errorResponse[0]['message'] : 'An unknown error occurred';
-        return{
+        dynamic errorResponse = json.decode(response.body);
+        String errorMessage;
+
+        // Check if the error response is a List or a Map
+        if (errorResponse is List && errorResponse.isNotEmpty) {
+          errorMessage = errorResponse[0]['message'];
+        } else if (errorResponse is Map && errorResponse.containsKey('message')) {
+          errorMessage = errorResponse[0]['message'];
+        } else {
+          errorMessage = 'An unknown error occurred';
+        }
+        return {
           'success': false,
-          'errors': errorMessage
+          'message': errorMessage,
         };
       }
     }catch(e){

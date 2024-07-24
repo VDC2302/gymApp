@@ -66,13 +66,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             splashImage,
             fit: BoxFit.fitHeight,
           ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: SvgPicture.asset(
-              sparkleEffect,
-              fit: BoxFit.fitHeight,
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(4.0),
+          //   child: SvgPicture.asset(
+          //     sparkleEffect,
+          //     fit: BoxFit.fitHeight,
+          //   ),
+          // ),
           AppColumn(
             height: Dims.deviceSize.height,
             width: Dims.deviceSize.width,

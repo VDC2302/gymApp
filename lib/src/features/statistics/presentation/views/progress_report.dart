@@ -22,10 +22,10 @@ class _ProgressReportState extends State<ProgressReport> {
   String _waistDate = '';
   String _hipsDate = '';
 
-  TextEditingController _weightController = TextEditingController();
-  TextEditingController _chestController = TextEditingController();
-  TextEditingController _waistController = TextEditingController();
-  TextEditingController _hipsController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _chestController = TextEditingController();
+  final TextEditingController _waistController = TextEditingController();
+  final TextEditingController _hipsController = TextEditingController();
 
   @override
   void initState() {
@@ -55,18 +55,6 @@ class _ProgressReportState extends State<ProgressReport> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context, String initialDate, ValueChanged<String> onDateSelected) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate.isNotEmpty ? DateTime.parse(initialDate) : DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      onDateSelected(picked.toIso8601String().split('T').first);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -75,107 +63,15 @@ class _ProgressReportState extends State<ProgressReport> {
         child: Column(
           children: [
             SparkleContainer(
-              height: 148.dy,
+              height: 157.dy,
               isBgWhite: true,
-              padding: EdgeInsets.all(10.dx).copyWith(right: 2),
+              fit: BoxFit.cover,
+              padding: EdgeInsets.all(10.dx),
               decoration: BoxDecoration(
                 color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 5.dx),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                text: 'Weight',
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            SvgAsset(assetName: diagonalArrows),
-                          ],
-                        ),
-                        YBox(10.dy),
-                        Row(
-                          children: [
-                            Text.rich(
-                              TextSpan(
-                                text: _weight != null ? '$_weight' : '0',
-                                style: TextStyle(
-                                  fontSize: 24.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: ' kg ',
-                                    style: GoogleFonts.inter(
-                                      color: appColors.grey80,
-                                      fontSize: 24.sp,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  WidgetSpan(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          height: 9.dy,
-                                          width: 1.dx,
-                                          color: appColors.black,
-                                        ),
-                                        Container(
-                                          height: 10.dy,
-                                          width: 1.dx,
-                                          color: Colors.transparent,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Spacer(),
-                            Column(
-                              children: [
-                                _buildWeightNumber(),
-                                SvgAsset(
-                                  assetName: weightLossGraph,
-                                  width: 152.dx,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  _buildRecordButton(
-                      title: 'Weight',
-                      valueController: _weightController,
-                      date: _weightDate,
-                      onSave: (newValue, newDate) async {
-                        await apiService.postTrackingValue(newValue, 'WEIGHT',
-                            newDate.isEmpty ? DateTime.now().toString().split(
-                                ' ')[0] : newDate);
-
-                        setState(() {
-                          _weightController.text = newValue;
-                          _weightDate = newDate;
-                        });
-                      },
-                  ),
-                ],
-              ),
+              child: _measureContent('Weight', 'WEIGHT', _weight, _weightDate, _weightController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -186,7 +82,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.green,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _chestContent(),
+                child: _measureContent('Chest', 'CHEST', _chest, _chestDate, _chestController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -198,7 +94,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _waistContent(),
+              child: _measureContent('Waist', 'WAIST', _waist, _waistDate, _waistController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -209,84 +105,11 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.green,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _hipsContent(),
+              child: _measureContent('Hips', 'HIPS', _hips, _hipsDate, _hipsController),
             ),
             YBox(30.dy),
           ],
         ),
-      ),
-    );
-  }
-
-  Container _buildWeightNumber() {
-    return Container(
-      width: 33.dx,
-      height: 15.dy,
-      alignment: Alignment.center,
-      margin: EdgeInsets.only(left: 80.dx),
-      decoration: BoxDecoration(
-        color: appColors.green,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(
-        _weight != null ? '$_weight kg' : '0 kg',
-        style: GoogleFonts.inter(
-          fontSize: 7.sp,
-          fontWeight: FontWeight.w500,
-          color: appColors.white,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEditableContainer({
-    required String title,
-    required TextEditingController valueController,
-    required String date,
-    required VoidCallback onEdit,
-  }) {
-    return SparkleContainer(
-      height: 157.dy,
-      isBgWhite: true,
-      padding: EdgeInsets.all(10.dx).copyWith(right: 2),
-      decoration: BoxDecoration(
-        color: appColors.white,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left: 5.dx),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        text: title,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    SvgAsset(assetName: diagonalArrows),
-                  ],
-                ),
-                YBox(10.dy),
-                Text('Value: ${valueController.text}'),
-                YBox(10.dy),
-                Text('Date: $date'),
-              ],
-            ),
-          ),
-          const Spacer(),
-          ElevatedButton(
-            onPressed: onEdit,
-            child: Text('Edit'),
-          ),
-        ],
       ),
     );
   }
@@ -334,13 +157,13 @@ class _ProgressReportState extends State<ProgressReport> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Save'),
+              child: const Text('Save'),
               onPressed: () async {
                 await onSave(valueController.text, dateController.text);
                 await _getTrackingValues();
@@ -365,7 +188,7 @@ class _ProgressReportState extends State<ProgressReport> {
           context: context,
           title: title,
           valueController: valueController,
-          initialDate: date,
+          initialDate: DateTime.now().toString().split(' ')[0],
           onDateSelected: (newDate) {
             setState(() {
               date = newDate;
@@ -407,7 +230,13 @@ class _ProgressReportState extends State<ProgressReport> {
     );
   }
 
-  Widget _chestContent() {
+  Widget _measureContent(
+      String title,
+      String type,
+      double? value,
+      String date,
+      TextEditingController controller,
+      ) {
     return Column(
       children: [
         YBox(10.dy),
@@ -415,14 +244,14 @@ class _ProgressReportState extends State<ProgressReport> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(
-              text: 'Chest',
+              text: title,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-              color: appColors.white,
+              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
             ),
             SvgAsset(
               assetName: arrowRight,
-              color: appColors.white,
+              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
               height: 16.dx,
             ),
           ],
@@ -431,158 +260,36 @@ class _ProgressReportState extends State<ProgressReport> {
         Row(
           children: [
             AppText(
-              text: _chest != null ? '$_chest' : '0',
+              text: value != null ? '$value' : '0',
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: appColors.white,
+              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
             ),
             const Spacer(),
-            SvgAsset(assetName: kgIcon),
+                SvgAsset(assetName: type == 'WEIGHT' ? kgIcon : fireIcon),
           ],
         ),
         AppText(
           isStartAligned: T,
-          text: _chestDate != null ? '$_chestDate' : 'null',
+          text: date,
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
-          color: appColors.white,
+          color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
         ),
         YBox(10.dy),
         const Spacer(),
         _buildRecordButton(
-          title: 'Chest',
-          valueController: _weightController,
-          date: _weightDate,
+          title: title,
+          valueController: controller,
+          date: date,
           onSave: (newValue, newDate) async {
-            await apiService.postTrackingValue(newValue, 'CHEST',
+            await apiService.postTrackingValue(newValue, type,
                 newDate.isEmpty ? DateTime.now().toString().split(
                     ' ')[0] : newDate);
 
             setState(() {
-              _weightController.text = newValue;
-              _weightDate = newDate;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _waistContent() {
-    return Column(
-      children: [
-        YBox(10.dy),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              text: 'Waist',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              // color: appColors.white,
-            ),
-            SvgAsset(
-              assetName: arrowRight,
-              // color: appColors.white,
-              height: 16.dx,
-            ),
-          ],
-        ),
-        const Spacer(),
-        Row(
-          children: [
-            AppText(
-              text: _waist != null ? '$_waist' : '0',
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              // color: appColors.white,
-            ),
-            const Spacer(),
-                SvgAsset(assetName: fireIcon),
-          ],
-        ),
-        AppText(
-          isStartAligned: T,
-          text: _waistDate != null ? '$_waistDate' : 'null',
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w400,
-          // color: appColors.white,
-        ),
-        YBox(10.dy),
-        const Spacer(),
-        _buildRecordButton(
-          title: 'Waist',
-          valueController: _weightController,
-          date: _weightDate,
-          onSave: (newValue, newDate) async {
-            await apiService.postTrackingValue(newValue, 'WAIST',
-                newDate.isEmpty ? DateTime.now().toString().split(
-                    ' ')[0] : newDate);
-
-            setState(() {
-              _weightController.text = newValue;
-              _weightDate = newDate;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _hipsContent() {
-    return Column(
-      children: [
-        YBox(10.dy),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              text: 'Hips',
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-              color: appColors.white,
-            ),
-            SvgAsset(
-              assetName: arrowRight,
-              color: appColors.white,
-              height: 16.dx,
-            ),
-          ],
-        ),
-        const Spacer(),
-        Row(
-          children: [
-            AppText(
-              text: _hips != null ? '$_hips' : '0',
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: appColors.white,
-            ),
-            const Spacer(),
-            SvgAsset(assetName: fireIcon),
-          ],
-        ),
-        AppText(
-          isStartAligned: T,
-          text: _hipsDate != null ? '$_hipsDate' : 'null',
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w400,
-          color: appColors.white,
-        ),
-        YBox(10.dy),
-        const Spacer(),
-        _buildRecordButton(
-          title: 'Hips',
-          valueController: _weightController,
-          date: _weightDate,
-          onSave: (newValue, newDate) async {
-            await apiService.postTrackingValue(newValue, 'HIPS',
-                newDate.isEmpty ? DateTime.now().toString().split(
-                    ' ')[0] : newDate);
-
-            setState(() {
-              _weightController.text = newValue;
-              _weightDate = newDate;
+              controller.text = newValue;
+              date = newDate;
             });
           },
         ),
@@ -590,4 +297,3 @@ class _ProgressReportState extends State<ProgressReport> {
     );
   }
 }
-

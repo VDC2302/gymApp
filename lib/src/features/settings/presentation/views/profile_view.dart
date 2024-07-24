@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
+import 'package:gymApp/src/shared/theme/app_theme.dart';
+import 'package:gymApp/src/shared/utils/utils.dart';
 
-class SettingsView extends HookWidget {
-  const SettingsView({super.key});
+class ProfileView extends HookWidget {
+  const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +44,70 @@ class SettingsView extends HookWidget {
               : errorMessage.value != null
               ? Center(child: Text(errorMessage.value!, style: const TextStyle(color: Colors.red)))
               : profileData.value != null
-              ? _buildProfileContainer(profileData.value!)
+              ? Column(
+                children:[
+                  _buildProfileContainer(profileData.value!),
+                  _buildLogoutButton(context),
+                ],
+              )
               : const Center(child: Text('Profile data not available')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(20.dx),
+      child: ElevatedButton(
+        onPressed: () => _logout(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: appColors.yellow, // Set the button color
+          padding: EdgeInsets.symmetric(vertical: 15.dy, horizontal: 30.dx),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: Text(
+          'Logout',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: appColors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _logout(BuildContext context) {
+
+    // Perform logout actions here, such as clearing user data, redirecting to login screen, etc.
+    // For demonstration, we'll just show a dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async{
+              Navigator.of(context).pop(); // Close the dialog
+              await ApiService().logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appColors.yellow,
+            ),
+            child: const Text(
+                'Logout',
+            ),
+          ),
         ],
       ),
     );
@@ -51,7 +115,7 @@ class SettingsView extends HookWidget {
 
   Widget _buildProfileContainer(Map<String, dynamic> data) {
     return Container(
-      height: 79.dy,
+      height: 100.dy,
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 15.dx, vertical: 10.dx),
       padding: EdgeInsets.symmetric(horizontal: 15.dx),
@@ -78,7 +142,7 @@ class SettingsView extends HookWidget {
                 Text(
                   '${data['firstName']} ${data['lastName']}',
                   style: GoogleFonts.lato(
-                    fontSize: 20.sp,
+                    fontSize: 30.sp,
                     fontWeight: FontWeight.w600,
                     color: appColors.grey33,
                   ),
@@ -86,7 +150,7 @@ class SettingsView extends HookWidget {
                 Text(
                   '${data['gender']}',
                   style: GoogleFonts.lato(
-                    fontSize: 14.sp,
+                    fontSize: 17.sp,
                     fontWeight: FontWeight.w600,
                     color: appColors.grey.withOpacity(.5),
                   ),
@@ -94,7 +158,7 @@ class SettingsView extends HookWidget {
                 Text(
                   '01/01/2002',
                   style: GoogleFonts.lato(
-                    fontSize: 14.sp,
+                    fontSize: 17.sp,
                     fontWeight: FontWeight.w600,
                     color: appColors.grey.withOpacity(.5),
                   ),
@@ -203,4 +267,6 @@ class SettingsTile extends StatelessWidget {
       ),
     );
   }
+
+
 }
