@@ -1,12 +1,8 @@
-import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
-import 'package:gymApp/src/shared/theme/app_theme.dart';
-import 'package:gymApp/src/shared/utils/utils.dart';
 
 class ProfileView extends HookWidget {
   const ProfileView({super.key});

@@ -35,10 +35,10 @@ class _ProgressReportState extends State<ProgressReport> {
 
   Future<void> _getTrackingValues() async {
     try {
-      final weightData = await apiService.getTrackingValue('WEIGHT');
-      final chestData = await apiService.getTrackingValue('CHEST');
-      final waistData = await apiService.getTrackingValue('WAIST');
-      final hipsData = await apiService.getTrackingValue('HIPS');
+      final weightData = await apiService.getLatestTrackingValue('WEIGHT');
+      final chestData = await apiService.getLatestTrackingValue('CHEST');
+      final waistData = await apiService.getLatestTrackingValue('WAIST');
+      final hipsData = await apiService.getLatestTrackingValue('HIPS');
 
       setState(() {
         _weight = weightData?['value'];

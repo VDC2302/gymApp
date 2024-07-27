@@ -1,5 +1,4 @@
 import 'package:gymApp/src/features/auth/presentation/widgets/widgets.dart';
-import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';

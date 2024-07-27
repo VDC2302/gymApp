@@ -1,5 +1,4 @@
 import 'package:gymApp/src/shared/shared.dart';
-import 'package:gymApp/src/shared/widgets/bounce_in_animation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
@@ -60,7 +59,7 @@ class _HomeViewState extends State<HomeView> {
                     TextSpan(
                       text: _isLoading
                           ? 'Loading...'
-                          : ('$_fullName\n' ?? 'Failed to load full name'),
+                          : ('$_fullName\n'),
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
