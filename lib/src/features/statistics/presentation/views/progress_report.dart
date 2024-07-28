@@ -18,15 +18,18 @@ class _ProgressReportState extends State<ProgressReport> {
   double? _chest;
   double? _waist;
   double? _hips;
+  double? _calories;
   String _weightDate = '';
   String _chestDate = '';
   String _waistDate = '';
   String _hipsDate = '';
+  String _caloriesDate = '';
 
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _chestController = TextEditingController();
   final TextEditingController _waistController = TextEditingController();
   final TextEditingController _hipsController = TextEditingController();
+  final TextEditingController _caloriesController = TextEditingController();
 
   @override
   void initState() {
@@ -40,16 +43,19 @@ class _ProgressReportState extends State<ProgressReport> {
       final chestData = await apiService.getLatestTrackingValue('CHEST');
       final waistData = await apiService.getLatestTrackingValue('WAIST');
       final hipsData = await apiService.getLatestTrackingValue('HIPS');
+      final caloriesData = await apiService.getLatestTrackingValue('CALORIES');
 
       setState(() {
         _weight = weightData?['value'];
         _chest = chestData?['value'];
         _waist = waistData?['value'];
         _hips = hipsData?['value'];
+        _calories = caloriesData?['value'];
         _weightDate = weightData?['createdDate'];
         _chestDate = chestData?['createdDate'];
         _waistDate = waistData?['createdDate'];
         _hipsDate = hipsData?['createdDate'];
+        _caloriesDate = caloriesData?['createdDate'];
       });
     } catch (e) {
       print(e.toString());
@@ -83,7 +89,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.green,
                 borderRadius: BorderRadius.circular(5),
               ),
-                child: _measureContent('Chest', 'CHEST', _chest, _chestDate, _chestController),
+                child: _measureContent('Calories', 'CALORIES', _calories, _caloriesDate, _caloriesController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -95,7 +101,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _measureContent('Waist', 'WAIST', _waist, _waistDate, _waistController),
+              child: _measureContent('Chest', 'CHEST', _chest, _chestDate, _chestController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -104,6 +110,18 @@ class _ProgressReportState extends State<ProgressReport> {
               padding: EdgeInsets.all(10.dx),
               decoration: BoxDecoration(
                 color: appColors.green,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: _measureContent('Waist', 'WAIST', _waist, _waistDate, _waistController),
+            ),
+            YBox(30.dy),
+            SparkleContainer(
+              height: 157.dy,
+              isBgWhite: true,
+              fit: BoxFit.cover,
+              padding: EdgeInsets.all(10.dx),
+              decoration: BoxDecoration(
+                color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: _measureContent('Hips', 'HIPS', _hips, _hipsDate, _hipsController),
@@ -248,11 +266,11 @@ class _ProgressReportState extends State<ProgressReport> {
               text: title,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
+                color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             SvgAsset(
               assetName: arrowRight,
-              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
+              color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
               height: 16.dx,
             ),
           ],
@@ -264,10 +282,10 @@ class _ProgressReportState extends State<ProgressReport> {
               text: value != null ? '$value' : '0',
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
+              color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             const Spacer(),
-                SvgAsset(assetName: type == 'WEIGHT' ? kgIcon : fireIcon),
+                SvgAsset(assetName: type == 'WEIGHT' || type == 'CALORIES' ? kgIcon : fireIcon),
           ],
         ),
         AppText(
@@ -275,7 +293,7 @@ class _ProgressReportState extends State<ProgressReport> {
           text: date,
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
-          color: type == 'CHEST' || type == 'HIPS' ? appColors.white : appColors.black,
+          color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
         ),
         YBox(10.dy),
         const Spacer(),

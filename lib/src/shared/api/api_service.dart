@@ -265,10 +265,13 @@ class ApiService {
 
         final List<Map<String, dynamic>> items = responseData
             .where((item) => item['trackingType'] == trackingType)
-            .map((item) => item as Map<String, dynamic>)
-            .toList();
+            .map((item) =>{
+          'value': item['value'],
+          'createdDate': item['createdDate'],
+        }).toList();
 
         if (items.isNotEmpty) {
+          print('tracking values: $items');
           return items;
         } else {
           throw Exception('Tracking type not found');
