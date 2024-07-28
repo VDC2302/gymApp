@@ -1,9 +1,7 @@
-import 'package:gymApp/src/features/home/presentation/views/home_view.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ProgressReport extends StatefulWidget {
   const ProgressReport({super.key});
@@ -51,11 +49,11 @@ class _ProgressReportState extends State<ProgressReport> {
         _waist = waistData?['value'];
         _hips = hipsData?['value'];
         _calories = caloriesData?['value'];
-        _weightDate = weightData?['createdDate'];
-        _chestDate = chestData?['createdDate'];
-        _waistDate = waistData?['createdDate'];
-        _hipsDate = hipsData?['createdDate'];
-        _caloriesDate = caloriesData?['createdDate'];
+        _weightDate = weightData?['createdDate'] ?? '';
+        _chestDate = chestData?['createdDate'] ?? '';
+        _waistDate = waistData?['createdDate'] ?? '';
+        _hipsDate = hipsData?['createdDate'] ?? '';
+        _caloriesDate = caloriesData?['createdDate'] ?? '';
       });
     } catch (e) {
       print(e.toString());
@@ -78,7 +76,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _measureContent('Weight', 'WEIGHT', _weight, _weightDate, _weightController),
+              child: _measureContent('Calories', 'CALORIES', _weight, _weightDate, _weightController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -89,7 +87,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.green,
                 borderRadius: BorderRadius.circular(5),
               ),
-                child: _measureContent('Calories', 'CALORIES', _calories, _caloriesDate, _caloriesController),
+                child: _measureContent('Weight', 'WEIGHT', _calories, _caloriesDate, _caloriesController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -266,11 +264,11 @@ class _ProgressReportState extends State<ProgressReport> {
               text: title,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-                color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
+                color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             SvgAsset(
               assetName: arrowRight,
-              color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
+              color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
               height: 16.dx,
             ),
           ],
@@ -282,10 +280,11 @@ class _ProgressReportState extends State<ProgressReport> {
               text: value != null ? '$value' : '0',
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
+              color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             const Spacer(),
-                SvgAsset(assetName: type == 'WEIGHT' || type == 'CALORIES' ? kgIcon : fireIcon),
+                SvgAsset(assetName: type == 'WEIGHT' ? kgIcon
+                    : type == 'CALORIES' ? exploreFilled : fireIcon),
           ],
         ),
         AppText(
@@ -293,24 +292,27 @@ class _ProgressReportState extends State<ProgressReport> {
           text: date,
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
-          color: type == 'CALORIES' || type == 'WAIST' ? appColors.white : appColors.black,
+          color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
         ),
         YBox(10.dy),
         const Spacer(),
-        _buildRecordButton(
-          title: title,
-          valueController: controller,
-          date: date,
-          onSave: (newValue, newDate) async {
-            await apiService.postTrackingValue(newValue, type,
-                newDate.isEmpty ? DateTime.now().toString().split(
-                    ' ')[0] : newDate);
+        Visibility(
+          visible: type != 'CALORIES' ? true : false,
+          child: _buildRecordButton(
+            title: title,
+            valueController: controller,
+            date: date,
+            onSave: (newValue, newDate) async {
+              await apiService.postTrackingValue(newValue, type,
+                  newDate.isEmpty ? DateTime.now().toString().split(
+                      ' ')[0] : newDate);
 
-            setState(() {
-              controller.text = newValue;
-              date = newDate;
-            });
-          },
+              setState(() {
+                controller.text = newValue;
+                date = newDate;
+              });
+            },
+          ),
         ),
       ],
     );

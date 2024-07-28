@@ -22,7 +22,6 @@ class ExploreWorkouts extends StatelessWidget {
               ],
             ),
             YBox(20.dy),
-            _buildText('Cardio'),
             SparkleContainer(
               height: 148.dy,
               decoration: BoxDecoration(
@@ -34,7 +33,7 @@ class ExploreWorkouts extends StatelessWidget {
                 bottomText: 'EXCERCISES',
               ),
             ),
-            _buildText('Strength Training'),
+            YBox(20.dy),
             SparkleContainer(
               height: 148.dy,
               isBgWhite: true,
@@ -48,7 +47,7 @@ class ExploreWorkouts extends StatelessWidget {
                 bottomText: 'TRAINING',
               ),
             ),
-            _buildText('HIIT'),
+            YBox(20.dy),
             SparkleContainer(
               height: 148.dy,
               decoration: BoxDecoration(
@@ -66,6 +65,8 @@ class ExploreWorkouts extends StatelessWidget {
       ),
     );
   }
+
+  // Widget _buildTrainingProgram(String title, String)
 
   Widget _buildLevelWidget(String text, {required bool isSelected}) {
     return Container(

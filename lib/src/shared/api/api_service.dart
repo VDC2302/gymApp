@@ -222,7 +222,7 @@ class ApiService {
     final token = await getToken();
 
     if(token != null){
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -233,18 +233,14 @@ class ApiService {
         final List<dynamic> item = responseData.where(
                 (item) => item['trackingType'] == trackingType).toList();
 
-        if(item.isNotEmpty){
-          final Map<String, dynamic> latestItem = item.reduce(
-                (a,b) => a['id'] > b['id'] ? a : b,
+        final Map<String, dynamic> latestItem = item.reduce(
+              (a,b) => a['id'] > b['id'] ? a : b,
           );
-          return latestItem;
-        } else {
-          throw Exception('Tracking type not found');
-        }
 
-      }else{
-        throw Exception('Failed to load value');
-      }
+        return latestItem;
+        }else{
+          throw Exception('Failed to load value');
+        }
     }else{
       throw Exception('Token not found');
     }
@@ -271,7 +267,6 @@ class ApiService {
         }).toList();
 
         if (items.isNotEmpty) {
-          print('tracking values: $items');
           return items;
         } else {
           throw Exception('Tracking type not found');
@@ -280,6 +275,28 @@ class ApiService {
         throw Exception('Failed to load values');
       }
     } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllTrainingProgram() async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/all'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      if (response.statusCode == 202) {
+        final responseData = json.decode(response.body);
+
+        final List<Map<String, dynamic>> content = responseData['content'];
+        return content;
+      }else{
+        throw Exception('Failed to load programs');
+      }
+    }else{
       throw Exception('Token not found');
     }
   }

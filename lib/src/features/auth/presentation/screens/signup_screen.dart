@@ -1,9 +1,7 @@
 import 'package:gymApp/src/features/auth/presentation/widgets/widgets.dart';
-import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 
 class SignUpScreen extends StatefulWidget {

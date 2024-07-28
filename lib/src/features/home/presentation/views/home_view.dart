@@ -1,12 +1,9 @@
-import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
-import 'package:gymApp/src/features/statistics/presentation/views/progress_report.dart';
 
 enum HomeAct { first, second, third, fourth }
 
@@ -23,6 +20,7 @@ class _HomeViewState extends State<HomeView> {
   bool _isLoading = true;
   String? _errorMessage;
   double? _weight;
+  double? _calories;
 
   @override
   void initState() {
@@ -50,9 +48,11 @@ class _HomeViewState extends State<HomeView> {
   Future<void> _getTrackingValue() async{
     try{
       final weightData = await apiService.getLatestTrackingValue('WEIGHT');
+      final caloriesData = await apiService.getLatestTrackingValue('CALORIES');
 
       setState(() {
         _weight = weightData?['value'];
+       _calories = caloriesData?['value'];
       });
     }catch(e){
       print(e.toString());
@@ -77,7 +77,7 @@ class _HomeViewState extends State<HomeView> {
                     TextSpan(
                       text: _isLoading
                           ? 'Loading...'
-                          : ('$_firstName\n' ?? 'Failed to load full name'),
+                          : ('$_firstName\n'),
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -346,7 +346,7 @@ class _HomeViewState extends State<HomeView> {
               homeAct == HomeAct.first
                   ? Text.rich(
                       TextSpan(
-                        text: '   167 ',    //kcal
+                        text: '   $_calories',    //kcal
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
