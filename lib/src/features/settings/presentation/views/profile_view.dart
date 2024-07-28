@@ -1,8 +1,11 @@
 import 'package:gymApp/src/shared/shared.dart';
+import 'package:gymApp/src/features/navigation/routes.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gymApp/src/shared/api/api_service.dart';
+import 'package:gymApp/src/shared/theme/app_theme.dart';
+import 'package:gymApp/src/shared/utils/utils.dart';
 
 class ProfileView extends HookWidget {
   const ProfileView({super.key});
@@ -96,12 +99,13 @@ class ProfileView extends HookWidget {
             onPressed: () async{
               Navigator.of(context).pop(); // Close the dialog
               await ApiService().logout();
+              Navigator.pushReplacementNamed(context, AuthRoutes.loginOrSignUp);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: appColors.yellow,
             ),
-            child: const Text(
-                'Logout',
+            child: Text(
+                'Logout', style: TextStyle(color: appColors.white),
             ),
           ),
         ],

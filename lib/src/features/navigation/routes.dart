@@ -14,6 +14,11 @@ class AuthRoutes {
 
 class HomeRoutes {
   static const main = '/mainView';
+
+}
+
+class StatisticRoutes {
+  static const stats = '/statsView';
 }
 
 class OrdersRoutes {}

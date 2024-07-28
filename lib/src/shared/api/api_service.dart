@@ -29,8 +29,8 @@ class Token {
 class ApiService {
   Future<void> storeToken(Token token) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('jwtToken', token.jwtToken) ?? [];
-    prefs.setString('refreshToken', token.refreshToken) ?? [];
+    prefs.setString('jwtToken', token.jwtToken);
+    prefs.setString('refreshToken', token.refreshToken);
   }
 
   Future<Token?> getToken() async {
@@ -57,27 +57,26 @@ class ApiService {
     return jwtToken != null;
   }
 
-  Future<void> fetchData() async {
-    Token? token = await getToken();
-
-    if (token != null) {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
-        headers: {
-          'Authorization': 'Bearer ${token.jwtToken}',
-        },);
-
-      if (response.statusCode == 202) {
-        //handle response
-        print('Data: ${response.body}');
-      } else {
-        //handle error
-        print('Failed to load data');
-      }
-    } else {
-      print('Token not found');
-    }
-  }
+  // Future<void> fetchData() async{
+  //   Token? token = await getToken();
+  //
+  //   if(token != null){
+  //     final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+  //       headers: {
+  //         'Authorization': 'Bearer ${token.jwtToken}',
+  //       },);
+  //
+  //     if(response.statusCode == 202){
+  //       //handle response
+  //       print('Data: ${response.body}');
+  //     }else{
+  //       //handle error
+  //       print('Failed to load data');
+  //     }
+  //   }else{
+  //     print('Token not found');
+  //   }
+  // }
 
   Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
@@ -101,8 +100,7 @@ class ApiService {
         // Check if the error response is a List or a Map
         if (errorResponse is List && errorResponse.isNotEmpty) {
           errorMessage = errorResponse[0]['message'];
-        } else
-        if (errorResponse is Map && errorResponse.containsKey('message')) {
+        } else if (errorResponse is Map && errorResponse.containsKey('message')) {
           errorMessage = errorResponse['message'];
         } else {
           errorMessage = 'An unknown error occurred';
@@ -156,30 +154,7 @@ class ApiService {
     }
   }
 
-  Future<String?> getFullName() async {
-    final token = await getToken();
-
-    if (token != null) {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
-        headers: {
-          'Authorization': 'Bearer ${token.jwtToken}',
-        },);
-
-      if (response.statusCode == 202) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final String firstName = responseData['firstName'];
-        final String lastName = responseData['lastName'];
-        return '$lastName $firstName';
-      } else {
-        throw Exception('Failed to load profile');
-      }
-    } else {
-      throw Exception('token not found');
-    }
-  }
-
-  Future<Map<String, dynamic>?> getProfile() async {
+  Future<Map<String, dynamic>?> getProfile() async{
     final token = await getToken();
 
     if (token != null) {
@@ -193,6 +168,7 @@ class ApiService {
         return responseData;
       }
     }
+    return null;
   }
 
   Future<List<String>?> getTrackingTypes() async {
@@ -216,8 +192,7 @@ class ApiService {
     }
   }
 
-  Future<void> postTrackingValue(String value, String trackingType,
-      String date) async {
+  Future<void> postTrackingValue(String value, String trackingType, String date) async {
     try {
       final token = await getToken();
       if (token != null) {
@@ -231,14 +206,6 @@ class ApiService {
           body: json.encode(data),
         );
 
-        //   if (response.statusCode == 200) {
-        //     return json.decode(response.body);
-        //   } else {
-        //     Map<String, dynamic> errorResponse = json.decode(response.body);
-        //     return {'success': false, 'message': [errorResponse]};
-        //   }
-        // } else {
-        //   throw Exception('Token not found');
         if (response.statusCode != 202) {
           throw Exception('Failed to update data for $trackingType');
         }
@@ -247,7 +214,7 @@ class ApiService {
         throw Exception('Token not found');
       }
     } catch (e) {
-      print(e.toString());
+      throw Exception(e);
     }
   }
 

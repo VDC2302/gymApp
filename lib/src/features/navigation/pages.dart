@@ -2,11 +2,13 @@ import 'package:gymApp/src/features/auth/presentation/screens/login_screen.dart'
 import 'package:gymApp/src/features/auth/presentation/screens/login_signup_screen.dart';
 import 'package:gymApp/src/features/auth/presentation/screens/signup_screen.dart';
 import 'package:gymApp/src/features/home/presentation/views/main_view.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/progress_report.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:gymApp/src/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
 import 'nav.dart';
 
 class AppPages {
@@ -39,7 +41,7 @@ List<GetPage> authPages = [
   ),
   GetPage(
     name: AuthRoutes.login,
-    page: () => LoginScreen(),
+    page: () => const LoginScreen(),
     transition: Transition.leftToRightWithFade,
     transitionDuration: const Duration(milliseconds: 500),
   ),
@@ -71,7 +73,14 @@ List<GetPage> homePages = [
 List<GetPage> trackPages = [];
 
 //*---------------------------Statiststics Routes-----------------------------------------
-List<GetPage> statisticsPages = [];
+List<GetPage> statisticsPages = [
+  GetPage(
+      name: StatisticRoutes.stats,
+      page: () => const StatisticsView(),
+      transition: Transition.native,
+      transitionDuration: const Duration(milliseconds: 500),
+  )
+];
 
 //*------------------------------Settings Routes------------------------------------------
 List<GetPage> settingsPages = [];

@@ -1,3 +1,4 @@
+import 'package:gymApp/src/features/home/presentation/views/home_view.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -145,7 +146,7 @@ class _ProgressReportState extends State<ProgressReport> {
                     context: context,
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
+                    lastDate: DateTime.now(),
                   );
                   if (pickedDate != null) {
                     dateController.text = pickedDate.toString().split(' ')[0];

@@ -1,9 +1,12 @@
+import 'package:gymApp/src/features/navigation/routes.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
+import 'package:gymApp/src/features/statistics/presentation/views/progress_report.dart';
 
 enum HomeAct { first, second, third, fourth }
 
@@ -15,29 +18,44 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  String? _fullName;
+  ApiService apiService = ApiService();
+  String? _firstName;
   bool _isLoading = true;
   String? _errorMessage;
+  double? _weight;
 
   @override
   void initState() {
     super.initState();
     _getFullName();
+    _getTrackingValue();
   }
 
   Future<void> _getFullName() async {
     ApiService apiService = ApiService();
     try {
-      final fullName = await apiService.getFullName();
+      final fullName = await apiService.getProfile();
       setState(() {
-        _fullName = fullName;
+        _firstName = fullName?['firstName'];
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load full name: $e';
+        _errorMessage = 'Failed to load name: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _getTrackingValue() async{
+    try{
+      final weightData = await apiService.getLatestTrackingValue('WEIGHT');
+
+      setState(() {
+        _weight = weightData?['value'];
+      });
+    }catch(e){
+      print(e.toString());
     }
   }
 
@@ -59,7 +77,7 @@ class _HomeViewState extends State<HomeView> {
                     TextSpan(
                       text: _isLoading
                           ? 'Loading...'
-                          : ('$_fullName\n'),
+                          : ('$_firstName\n' ?? 'Failed to load full name'),
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -101,16 +119,16 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 child: _buildActivityContent(HomeAct.second),
               ),
-              YBox(20.dy),
-              SparkleContainer(
-                height: 128.dy,
-                isBgWhite: true,
-                decoration: BoxDecoration(
-                  color: appColors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: _buildActivityContent(HomeAct.third),
-              ),
+              // YBox(20.dy),
+              // SparkleContainer(
+              //   height: 128.dy,
+              //   isBgWhite: true,
+              //   decoration: BoxDecoration(
+              //     color: appColors.white,
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              //   child: _buildActivityContent(HomeAct.third),
+              // ),
               YBox(20.dy),
               SparkleContainer(
                 height: 128.dy,
@@ -121,35 +139,35 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 child: _buildActivityContent(HomeAct.fourth),
               ),
-              Container(
-                height: 1.dy,
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(vertical: 15.dy),
-                decoration: BoxDecoration(
-                  color: appColors.green,
-                ),
-              ),
-              Container(
-                height: 512.dy,
-                width: double.infinity,
-                padding:
-                    EdgeInsets.symmetric(vertical: 15.dy, horizontal: 5.dx),
-                decoration: BoxDecoration(
-                  color: appColors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    _buildSplitTexts('Workouts'),
-                    const Spacer(),
-                    _buildWorkoutContainer(true),
-                    YBox(10.dy),
-                    _buildWorkoutContainer(false),
-                    const Spacer(),
-                  ],
-                ),
-              ),
-              YBox(20.dy),
+              // Container(
+              //   height: 1.dy,
+              //   width: double.infinity,
+              //   margin: EdgeInsets.symmetric(vertical: 15.dy),
+              //   decoration: BoxDecoration(
+              //     color: appColors.green,
+              //   ),
+              // ),
+              // Container(
+              //   height: 512.dy,
+              //   width: double.infinity,
+              //   padding:
+              //       EdgeInsets.symmetric(vertical: 15.dy, horizontal: 5.dx),
+              //   decoration: BoxDecoration(
+              //     color: appColors.white,
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       _buildSplitTexts('Workouts'),
+              //       const Spacer(),
+              //       _buildWorkoutContainer(true),
+              //       YBox(10.dy),
+              //       _buildWorkoutContainer(false),
+              //       const Spacer(),
+              //     ],
+              //   ),
+              // ),
+              // YBox(20.dy),
             ],
           ),
         ),
@@ -159,117 +177,117 @@ class _HomeViewState extends State<HomeView> {
 
   //?----------------------------------------------------------------------------------------------------
 
-  Widget _buildWorkoutContainer(bool isPower) {
-    return Column(
-      children: [
-        Card(
-          elevation: 6,
-          shadowColor: appColors.white,
-          child: Container(
-            height: 169.dy,
-            decoration: BoxDecoration(
-              color: appColors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 280.dx,
-                  padding: EdgeInsets.all(10.dx),
-                  decoration: BoxDecoration(
-                    color: appColors.black,
-                    borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(12),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SvgAsset(
-                            assetName: trophyIcon,
-                            height: 15.dy,
-                            width: 13.dx,
-                          ),
-                          AppText(
-                            text: ' Collectables',
-                            color: appColors.white,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ],
-                      ),
-                      YBox(10.dy),
-                      AppText(
-                        isStartAligned: T,
-                        text: isPower
-                            ? 'HIGH POWER\nROUTINE'
-                            : 'QUICK BURST\nROUTINE',
-                        color: appColors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      YBox(30.dy),
-                      Row(
-                        children: [
-                          AppText(
-                            isStartAligned: T,
-                            text: '4 workouts ',
-                            color: appColors.white,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          Container(
-                            height: 8.dy,
-                            width: 8.dy,
-                            decoration: BoxDecoration(
-                              color: appColors.yellow,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                                child: Icon(
-                              Icons.keyboard_arrow_right,
-                              size: 8.dx,
-                            )),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10.dy)
-                      .copyWith(top: 15.dy),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SvgAsset(assetName: addIcon),
-                      SvgAsset(assetName: doublePlay),
-                      SvgAsset(assetName: nrcIcon),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        YBox(10.dy),
-        Padding(
-          padding: EdgeInsets.only(left: 10.dx),
-          child: AppText(
-            isStartAligned: true,
-            text:
-                'Build up better health and physique while achieving\nthe ultimate summer body goal!',
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        )
-      ],
-    );
-  }
+  // Widget _buildWorkoutContainer(bool isPower) {
+  //   return Column(
+  //     children: [
+  //       Card(
+  //         elevation: 6,
+  //         shadowColor: appColors.white,
+  //         child: Container(
+  //           height: 169.dy,
+  //           decoration: BoxDecoration(
+  //             color: appColors.white,
+  //             borderRadius: BorderRadius.circular(12),
+  //           ),
+  //           child: Row(
+  //             children: [
+  //               Container(
+  //                 width: 280.dx,
+  //                 padding: EdgeInsets.all(10.dx),
+  //                 decoration: BoxDecoration(
+  //                   color: appColors.black,
+  //                   borderRadius: const BorderRadius.horizontal(
+  //                     left: Radius.circular(12),
+  //                   ),
+  //                 ),
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     Row(
+  //                       mainAxisAlignment: MainAxisAlignment.end,
+  //                       children: [
+  //                         SvgAsset(
+  //                           assetName: trophyIcon,
+  //                           height: 15.dy,
+  //                           width: 13.dx,
+  //                         ),
+  //                         AppText(
+  //                           text: ' Collectables',
+  //                           color: appColors.white,
+  //                           fontSize: 12.sp,
+  //                           fontWeight: FontWeight.w500,
+  //                         ),
+  //                       ],
+  //                     ),
+  //                     YBox(10.dy),
+  //                     AppText(
+  //                       isStartAligned: T,
+  //                       text: isPower
+  //                           ? 'HIGH POWER\nROUTINE'
+  //                           : 'QUICK BURST\nROUTINE',
+  //                       color: appColors.white,
+  //                       fontSize: 15.sp,
+  //                       fontWeight: FontWeight.w700,
+  //                     ),
+  //                     YBox(30.dy),
+  //                     Row(
+  //                       children: [
+  //                         AppText(
+  //                           isStartAligned: T,
+  //                           text: '4 workouts ',
+  //                           color: appColors.white,
+  //                           fontSize: 12.sp,
+  //                           fontWeight: FontWeight.w400,
+  //                         ),
+  //                         Container(
+  //                           height: 8.dy,
+  //                           width: 8.dy,
+  //                           decoration: BoxDecoration(
+  //                             color: appColors.yellow,
+  //                             shape: BoxShape.circle,
+  //                           ),
+  //                           child: Center(
+  //                               child: Icon(
+  //                             Icons.keyboard_arrow_right,
+  //                             size: 8.dx,
+  //                           )),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: EdgeInsets.symmetric(vertical: 10.dy)
+  //                     .copyWith(top: 15.dy),
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.center,
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     SvgAsset(assetName: addIcon),
+  //                     SvgAsset(assetName: doublePlay),
+  //                     SvgAsset(assetName: nrcIcon),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //       YBox(10.dy),
+  //       Padding(
+  //         padding: EdgeInsets.only(left: 10.dx),
+  //         child: AppText(
+  //           isStartAligned: true,
+  //           text:
+  //               'Build up better health and physique while achieving\nthe ultimate summer body goal!',
+  //           fontSize: 11.sp,
+  //           fontWeight: FontWeight.w500,
+  //         ),
+  //       )
+  //     ],
+  //   );
+  // }
 
   Widget _buildSplitTexts(String text) {
     return Row(
@@ -309,19 +327,15 @@ class _HomeViewState extends State<HomeView> {
                   homeAct == HomeAct.first
                       ? SvgAsset(assetName: fireIcon)
                       : homeAct == HomeAct.second
-                          ? SvgAsset(assetName: stepsIcon)
-                          : homeAct == HomeAct.third
-                              ? SvgAsset(assetName: weightIcon)
-                              : SvgAsset(assetName: foodIcon),
+                      ? SvgAsset(assetName: weightIcon)
+                      : SvgAsset(assetName: foodIcon),
                   XBox(5.dx),
                   Text(
                     homeAct == HomeAct.first
                         ? 'Daily calories'
                         : homeAct == HomeAct.second
-                            ? 'Daily steps'
-                            : homeAct == HomeAct.third
-                                ? 'Weight record'
-                                : 'Food',
+                            ? 'Weight record'
+                            : 'Food',
                     style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
@@ -332,7 +346,7 @@ class _HomeViewState extends State<HomeView> {
               homeAct == HomeAct.first
                   ? Text.rich(
                       TextSpan(
-                        text: '   167 ',
+                        text: '   167 ',    //kcal
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -351,64 +365,43 @@ class _HomeViewState extends State<HomeView> {
                     )
                   : homeAct == HomeAct.second
                       ? Text.rich(
-                          TextSpan(
-                            text: '   140',
-                            style: GoogleFonts.inter(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                              color: appColors.green,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '/4000',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: appColors.black,
-                                ),
-                              ),
-                            ],
+                        TextSpan(
+                          text: '   $_weight',   //weight
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
                           ),
-                        )
-                      : homeAct == HomeAct.third
-                          ? Text.rich(
-                              TextSpan(
-                                text: '   83.3 ',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: 'kg',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: appColors.grey80,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Text.rich(
-                              TextSpan(
-                                text: '   0/1567 ',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: 'kcal',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: appColors.grey80,
-                                    ),
-                                  ),
-                                ],
+                          children: [
+                            TextSpan(
+                              text: 'kg',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                                color: appColors.grey80,
                               ),
                             ),
+                          ],
+                        ),
+                      )
+                      : Text.rich(
+                        TextSpan(
+                          text: '   0/1567 ',   //foodkcal
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'kcal',
+                              style: GoogleFonts.inter(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                                color: appColors.grey80,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
             ],
           ),
         ),
@@ -420,45 +413,43 @@ class _HomeViewState extends State<HomeView> {
               homeAct == HomeAct.first
                   ? SvgAsset(assetName: dailyCal)
                   : homeAct == HomeAct.second
-                      ? SvgAsset(assetName: dailySteps)
-                      : homeAct == HomeAct.third
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Container(
-                                      width: 33.dx,
-                                      height: 15.dy,
-                                      alignment: Alignment.center,
-                                      margin: EdgeInsets.only(right: 26.dx),
-                                      decoration: BoxDecoration(
-                                        color: appColors.green,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        '74.3kg',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 7.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: appColors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SvgAsset(assetName: weightChart),
-                                _recordButton(),
-                              ],
-                            )
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                YBox(50.dy),
-                                _recordButton(),
-                              ],
+                  ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 33.dx,
+                          height: 15.dy,
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.only(right: 26.dx),
+                          decoration: BoxDecoration(
+                            color: appColors.green,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            '$_weight'+'kg',
+                            style: GoogleFonts.inter(
+                              fontSize: 7.sp,
+                              fontWeight: FontWeight.w500,
+                              color: appColors.white,
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SvgAsset(assetName: weightChart),
+                    _recordButton(),
+                  ],
+                  )
+                  : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      YBox(50.dy),
+                      _recordButton(),
+                    ],
+                  ),
             ],
           ),
         ),
@@ -468,17 +459,27 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _recordButton() {
     return BounceInAnimation(
-      child: Container(
-        height: 27.dy,
-        width: 76.dx,
-        decoration: BoxDecoration(
-          color: appColors.yellow,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: AppText(
-          text: 'Record',
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StatisticsView(),
+            ),
+          );
+        },
+        child: Container(
+          height: 27.dy,
+          width: 76.dx,
+          decoration: BoxDecoration(
+            color: appColors.yellow,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: AppText(
+            text: 'Record',
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
