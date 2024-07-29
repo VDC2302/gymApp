@@ -279,20 +279,40 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllTrainingProgram() async{
+  Future<Map<String, dynamic>> getAllTrainingProgram(int pageNumber, String type, [String queryParams = '']) async {
+    final token = await getToken();
+
+    if (token != null) {
+      String programType = type.toLowerCase();
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/$programType?page=$pageNumber$queryParams'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}'
+        },
+      );
+      if (response.statusCode == 202) {
+        final responseData = json.decode(response.body);
+        return responseData;
+      } else {
+        throw Exception('Failed to load programs');
+      }
+    } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<Map<String, dynamic>> getAllOnlineTrainingProgram(int pageNumber) async{
     final token = await getToken();
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/all'),
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/online?page=$pageNumber'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
       if (response.statusCode == 202) {
         final responseData = json.decode(response.body);
-
-        final List<Map<String, dynamic>> content = responseData['content'];
-        return content;
+        return responseData;
       }else{
         throw Exception('Failed to load programs');
       }
@@ -300,4 +320,11 @@ class ApiService {
       throw Exception('Token not found');
     }
   }
+  //
+  // Future<void> isAdmin() async{
+  //   final token = await getToken();
+  //   if(token != null){
+  //     final http.Response
+  //   }
+  // }
 }
