@@ -19,9 +19,9 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   bool isLoading = true;
   bool isLoadingMore = false;
   bool isSearching = false;
+  bool hasMore = true;
   int currentPage = 0;
   final int pageSize = 5;
-  bool hasMore = true;
   String selectedType = 'ONLINE';
   final TextEditingController _searchController = TextEditingController();
 
@@ -68,6 +68,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       filteredWorkouts.clear(); // Clear filtered workouts
       currentPage = 0; // Reset page
       hasMore = true; // Reset hasMore
+      isSearching = false;
+      _searchController.clear();
       _getWorkouts(); // Fetch new data
     });
   }
@@ -76,8 +78,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     final query = _searchController.text;
     setState(() {
       filteredWorkouts = workouts.where((workout) {
-        final title = workout['title'].toLowerCase();
-        return title.contains(query.toLowerCase());
+        final title = workout['title'];
+        return title.contains(query);
       }).toList();
     });
   }
@@ -120,6 +122,10 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
                         ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.black), // Change border color when focused
+                        ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.close),
                           onPressed: () {
@@ -146,31 +152,35 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                           isSearching = !isSearching;
                         });
                       },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: isSearching ? Colors.black : Colors.white,
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(15.0),
+                      ),
                       child: Text(
                         isSearching ? 'Cancel' : 'Search',
                         style: GoogleFonts.inter(
-                          color: Colors.black,
-                          fontSize: 17.sp,
+                          color: isSearching ? Colors.white : Colors.black,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    _buildLevelButton('Online', 'ONLINE'),
-                    _buildLevelButton('Offline', 'OFFLINE'),
+                    _buildtypeButton('Online', 'ONLINE'),
+                    _buildtypeButton('Offline', 'OFFLINE'),
                   ],
                 ),
-                YBox(20.dy),
                 if (filteredWorkouts.isEmpty && !isLoading)
                   const Center(child: Text('No workouts available'))
                 else
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredWorkouts.length + (hasMore && !isLoadingMore ? 1 : 0),
+                    itemCount: filteredWorkouts.length + (hasMore && isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == filteredWorkouts.length) {
                         // Show loading indicator if there are more items to load
-                        print('length: $filteredWorkouts.length');
                         return const Center(child: CircularProgressIndicator());
                       }
                       final workout = filteredWorkouts[index];
@@ -180,7 +190,11 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                             height: 148.dy,
                             isBgWhite: index % 3 == 1,
                             decoration: BoxDecoration(
-                              color: index % 3 == 0 ? appColors.black : index % 3 == 1 ? appColors.white : appColors.green,
+                              color: index % 3 == 0
+                                  ? appColors.black
+                                  : index % 3 == 1
+                                  ? appColors.white
+                                  : appColors.green,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: workoutContContent(
@@ -195,7 +209,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                       );
                     },
                   ),
-                if (isLoadingMore)
+                if (isLoadingMore && filteredWorkouts.isEmpty)
                   const Center(child: CircularProgressIndicator()),
                 YBox(30.dy),
               ],
@@ -206,12 +220,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     );
   }
 
-  Widget _buildLevelButton(String text, String type) {
+  Widget _buildtypeButton(String text, String type) {
     bool isSelected = selectedType == type;
     return ElevatedButton(
       onPressed: () => _onTypeSelected(type),
       style: ElevatedButton.styleFrom(
-        foregroundColor: isSelected ? appColors.white : appColors.black, backgroundColor: isSelected ? appColors.black : appColors.white,
+        foregroundColor: isSelected ? appColors.white : appColors.black,
+        backgroundColor: isSelected ? appColors.black : appColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
