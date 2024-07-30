@@ -142,6 +142,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    _buildtypeButton('Online', 'ONLINE'),
+                    _buildtypeButton('Offline', 'OFFLINE'),
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -167,8 +169,6 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                         ),
                       ),
                     ),
-                    _buildtypeButton('Online', 'ONLINE'),
-                    _buildtypeButton('Offline', 'OFFLINE'),
                   ],
                 ),
                 if (filteredWorkouts.isEmpty && !isLoading)
@@ -184,28 +184,35 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       final workout = filteredWorkouts[index];
-                      return Column(
-                        children: [
-                          SparkleContainer(
-                            height: 148.dy,
-                            isBgWhite: index % 3 == 1,
-                            decoration: BoxDecoration(
-                              color: index % 3 == 0
-                                  ? appColors.black
-                                  : index % 3 == 1
-                                  ? appColors.white
-                                  : appColors.green,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: workoutContContent(
-                              topText: workout['title'].toUpperCase(),
-                              bottomText: workout['description'],
-                              type: workout['type'],
+                      return GestureDetector(
+                        onTap: () {
+                          _showWorkoutDetails(workout['title'], workout['type'], workout['description'], workout['startDate'], workout['startTime'], workout['id']);
+                        },
+                        child: Column(
+                          children: [
+                            SparkleContainer(
+                              height: 148.dy,
                               isBgWhite: index % 3 == 1,
+                              decoration: BoxDecoration(
+                                color: index % 3 == 0
+                                    ? appColors.black
+                                    : index % 3 == 1
+                                    ? appColors.white
+                                    : appColors.green,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: workoutContent(
+                                topText: workout['title'].toUpperCase(),
+                                description: workout['description'],
+                                type: workout['type'],
+                                startDate: workout['startDate'],
+                                startTime: workout['startTime'],
+                                isBgWhite: index % 3 == 1,
+                              ),
                             ),
-                          ),
-                          if (index < filteredWorkouts.length - 1) YBox(15.dy),
-                        ],
+                            if (index < filteredWorkouts.length - 1) YBox(15.dy),
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -242,11 +249,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     );
   }
 
-  Widget workoutContContent({
+  Widget workoutContent({
     bool isBgWhite = false,
     required String? topText,
     required String? type,
-    required String? bottomText,
+    required String? description,
+    required String? startDate,
+    required String? startTime
   }) {
     return Padding(
       padding: EdgeInsets.all(10.dx).copyWith(bottom: 30.dy),
@@ -267,7 +276,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   ),
                   children: [
                     TextSpan(
-                      text: type ?? 'TYPE',
+                      text: type == 'OFFLINE' ? '$type\n$startDate $startTime' : '$type',
                       style: GoogleFonts.inter(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
@@ -280,8 +289,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
               SizedBox(
                 width: 150.dx, // Adjust the width as needed
                 child: Text(
-                  '$bottomText',
-                  maxLines: 3,
+                  '$description',
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.roboto(
                     fontSize: 10.sp,
@@ -308,6 +317,103 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
           ),
         ],
       ),
+    );
+  }
+  void _showWorkoutDetails(String? title,
+      String? type,
+      String? description,
+      String? startDate,
+      String? startTime,
+      int id) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            title ?? '',
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Type: $type',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 10.dy),
+              Text(
+                'Start Date: $startDate',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 10.dy),
+              Text(
+                'Start Time: $startTime',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 10.dy),
+              Text(
+                'Description: $description',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await apiService.userRegisterProgram(id);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Successfully registered for the program!')),
+                  );
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to register: $e')),
+                  );
+                }
+              },
+              child: Text(
+                'Register',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

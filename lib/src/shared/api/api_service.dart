@@ -100,7 +100,8 @@ class ApiService {
         // Check if the error response is a List or a Map
         if (errorResponse is List && errorResponse.isNotEmpty) {
           errorMessage = errorResponse[0]['message'];
-        } else if (errorResponse is Map && errorResponse.containsKey('message')) {
+        } else
+        if (errorResponse is Map && errorResponse.containsKey('message')) {
           errorMessage = errorResponse['message'];
         } else {
           errorMessage = 'An unknown error occurred';
@@ -154,7 +155,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> getProfile() async{
+  Future<Map<String, dynamic>?> getProfile() async {
     final token = await getToken();
 
     if (token != null) {
@@ -192,7 +193,8 @@ class ApiService {
     }
   }
 
-  Future<void> postTrackingValue(String value, String trackingType, String date) async {
+  Future<void> postTrackingValue(String value, String trackingType,
+      String date) async {
     try {
       final token = await getToken();
       if (token != null) {
@@ -218,35 +220,38 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> getLatestTrackingValue(String trackingType) async{
+  Future<Map<String, dynamic>?> getLatestTrackingValue(
+      String trackingType) async {
     final token = await getToken();
 
-    if(token != null){
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
+    if (token != null) {
+      final response = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
 
-      if(response.statusCode == 202){
+      if (response.statusCode == 202) {
         final List<dynamic> responseData = json.decode(response.body);
 
         final List<dynamic> item = responseData.where(
                 (item) => item['trackingType'] == trackingType).toList();
 
         final Map<String, dynamic> latestItem = item.reduce(
-              (a,b) => a['id'] > b['id'] ? a : b,
-          );
+              (a, b) => a['id'] > b['id'] ? a : b,
+        );
 
         return latestItem;
-        }else{
-          throw Exception('Failed to load value');
-        }
-    }else{
+      } else {
+        throw Exception('Failed to load value');
+      }
+    } else {
       throw Exception('Token not found');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getTrackingValues(String trackingType) async {
+  Future<List<Map<String, dynamic>>> getTrackingValues(
+      String trackingType) async {
     final token = await getToken();
 
     if (token != null) {
@@ -261,7 +266,8 @@ class ApiService {
 
         final List<Map<String, dynamic>> items = responseData
             .where((item) => item['trackingType'] == trackingType)
-            .map((item) =>{
+            .map((item) =>
+        {
           'value': item['value'],
           'createdDate': item['createdDate'],
         }).toList();
@@ -279,13 +285,15 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getAllTrainingProgram(int pageNumber, String type, [String queryParams = '']) async {
+  Future<Map<String, dynamic>> getAllTrainingProgram(int pageNumber,
+      String type, [String queryParams = '']) async {
     final token = await getToken();
 
     if (token != null) {
       String programType = type.toLowerCase();
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/$programType?page=$pageNumber$queryParams'),
+        Uri.parse(
+            'http://10.0.2.2:8080/api/v1/user/training-program/$programType?page=$pageNumber$queryParams'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}'
         },
@@ -301,30 +309,65 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getAllOnlineTrainingProgram(int pageNumber) async{
+  Future<Map<String, dynamic>> getAllOnlineTrainingProgram(
+      int pageNumber) async {
     final token = await getToken();
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/online?page=$pageNumber'),
+          Uri.parse(
+              'http://10.0.2.2:8080/api/v1/user/training-program/online?page=$pageNumber'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
       if (response.statusCode == 202) {
         final responseData = json.decode(response.body);
         return responseData;
-      }else{
+      } else {
         throw Exception('Failed to load programs');
       }
-    }else{
+    } else {
       throw Exception('Token not found');
     }
   }
-  //
-  // Future<void> isAdmin() async{
-  //   final token = await getToken();
-  //   if(token != null){
-  //     final http.Response
-  //   }
-  // }
+
+  Future<Map<String, dynamic>> getUserTrainingProgram(int pageNumber,
+      String type, [String queryParams = '']) async {
+    final token = await getToken();
+
+    if (token != null) {
+      String programType = type.toLowerCase();
+      final response = await http.get(
+          Uri.parse(
+              'http://10.0.2.2:8080/api/v1/user/training-program/user/$programType?page=$pageNumber$queryParams'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      if (response.statusCode == 202) {
+        final responseData = json.decode(response.body);
+        return responseData;
+      } else {
+        throw Exception('Failed to load programs');
+      }
+    } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> userRegisterProgram(int id) async {
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.put(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/save/$id'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      if (response.statusCode != 202) {
+        throw Exception('Failed to register!');
+      }
+    } else {
+      throw Exception('Token not found');
+    }
+  }
 }
