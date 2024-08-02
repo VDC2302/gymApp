@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         ),
         child: GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'WeMove Fitness Tracker',
+          title: 'Get Go',
           theme: appTheme,
           initialRoute: AppPages.initial,
           getPages: AppPages.routes,

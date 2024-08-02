@@ -131,7 +131,7 @@ class ProfileView extends HookWidget {
               width: 42.dy,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: appColors.grey,
+                color: appColors.black,
               ),
             ),
             XBox(8.dx),

@@ -49,9 +49,9 @@ final ThemeData appTheme = baseTheme.copyWith(
         secondary: appColors.green,
         error: appColors.error,
         onError: appColors.error.withOpacity(0.42),
-        background: appColors.white,
+        surface: appColors.white,
       )
-      .copyWith(background: appColors.scaffoldColor),
+      .copyWith(surface: appColors.scaffoldColor),
 );
 
 var appColors = AppColors();

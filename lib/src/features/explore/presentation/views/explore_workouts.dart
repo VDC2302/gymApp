@@ -276,7 +276,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   ),
                   children: [
                     TextSpan(
-                      text: type == 'OFFLINE' ? '$type\n$startDate $startTime' : '$type',
+                      text: type == 'OFFLINE' ? '$type\n$startDate\n$startTime' : '$type',
                       style: GoogleFonts.inter(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
@@ -287,10 +287,10 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                 ),
               ),
               SizedBox(
-                width: 150.dx, // Adjust the width as needed
+                width: 200.dx, // Adjust the width as needed
                 child: Text(
                   '$description',
-                  maxLines: 2,
+                  maxLines: type == 'OFFLINE' ? 1 : 3,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.roboto(
                     fontSize: 10.sp,
@@ -380,7 +380,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   await apiService.userRegisterProgram(id);
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Successfully registered for the program!')),
+                    const SnackBar(content: Text('Successfully registered for the program!')),
                   );
                 } catch (e) {
                   Navigator.of(context).pop();

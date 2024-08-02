@@ -1,3 +1,4 @@
+import 'package:gymApp/src/features/explore/presentation/views/lesson_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -203,6 +204,7 @@ class _MyWorkoutState extends State<MyWorkout>{
                               startDate: workout['startDate'],
                               startTime: workout['startTime'],
                               isBgWhite: index % 3 == 1,
+                              workout: workout, // Pass the workout map here
                             ),
                           ),
                           if (index < filteredWorkouts.length - 1) YBox(15.dy),
@@ -249,67 +251,80 @@ class _MyWorkoutState extends State<MyWorkout>{
     required String? type,
     required String? description,
     required String? startDate,
-    required String? startTime
+    required String? startTime,
+    required Map<String, dynamic> workout, // Pass the workout map here
   }) {
-    return Padding(
-      padding: EdgeInsets.all(10.dx).copyWith(bottom: 30.dy),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  text: '$topText\n',
-                  style: GoogleFonts.inter(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w600,
-                    color: !isBgWhite ? appColors.white : null,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: type == 'OFFLINE' ? '$type\n$startDate $startTime' : '$type',
-                      style: GoogleFonts.inter(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: !isBgWhite ? appColors.white : null,
+    return InkWell(
+      onTap: () {
+        if (type == 'ONLINE') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LessonView(workout: workout),
+            ),
+          );
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.all(10.dx).copyWith(bottom: 30.dy),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: '$topText\n',
+                    style: GoogleFonts.inter(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w600,
+                      color: !isBgWhite ? appColors.white : null,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: type == 'OFFLINE' ? '$type\n$startDate\n$startTime' : '$type',
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: !isBgWhite ? appColors.white : null,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 200.dx, // Adjust the width as needed
+                  child: Text(
+                    '$description',
+                    maxLines: type == 'OFFLINE' ? 1 : 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.roboto(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w500,
+                      color: !isBgWhite ? const Color(0xffD9D9D9) : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    SvgAsset(
+                      assetName: trophyIcon,
+                      height: 13.5.dy,
                     ),
                   ],
                 ),
-              ),
-              SizedBox(
-                width: 150.dx, // Adjust the width as needed
-                child: Text(
-                  '$description',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.roboto(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w500,
-                    color: !isBgWhite ? const Color(0xffD9D9D9) : null,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  SvgAsset(
-                    assetName: trophyIcon,
-                    height: 13.5.dy,
-                  ),
-                ],
-              ),
-              SvgPicture.asset(quickBurst),
-            ],
-          ),
-        ],
+                SvgPicture.asset(quickBurst),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
