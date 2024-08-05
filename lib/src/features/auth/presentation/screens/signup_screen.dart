@@ -104,19 +104,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: DropdownButtonFormField<String>(
                   value: _selectedGender,
                   hint: const Text(
-                      'Select Gender',
-                      style: TextStyle(color: Colors.white),
+                    'Select Gender',
+                    style: TextStyle(color: Colors.white),
                   ),
+                  dropdownColor: Colors.white, // Sets the background color of the dropdown menu
                   items: ['Male', 'Female', 'Other'].map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value),
+                      child: Text(
+                        value,
+                        style: const TextStyle(color: Colors.black), // Sets the text color in the dropdown menu
+                      ),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedGender = newValue;
                     });
+                  },
+                  selectedItemBuilder: (BuildContext context) {
+                    return ['Male', 'Female', 'Other'].map<Widget>((String value) {
+                      return Text(
+                        value,
+                        style: const TextStyle(color: Colors.white), // Sets the text color of the selected item
+                      );
+                    }).toList();
                   },
                 ),
               ),

@@ -1,6 +1,6 @@
 import 'package:gymApp/src/features/explore/presentation/views/explore_view.dart';
 import 'package:gymApp/src/features/home/presentation/views/home_view.dart';
-import 'package:gymApp/src/features/settings/presentation/views/profile_view.dart';
+import 'package:gymApp/src/features/profile/presentation/views/profile_view.dart';
 import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';

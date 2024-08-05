@@ -243,12 +243,35 @@ class ApiService {
 
         return latestItem;
       } else {
-        throw Exception('Failed to load value');
+        print('Failed to load value');
       }
     } else {
       throw Exception('Token not found');
     }
+    return null;
   }
+
+  Future<List<Map<String, dynamic>>> getLatestListTrackingValue() async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+
+      if(response.statusCode == 202){
+        final List<Map<String, dynamic>> listValue = json.decode(response.body);
+        return listValue;
+      }else{
+        throw Exception('Value not found');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
 
   Future<List<Map<String, dynamic>>> getTrackingValues(
       String trackingType) async {
@@ -281,6 +304,23 @@ class ApiService {
         throw Exception('Failed to load values');
       }
     } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> editTrackingValue() async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.put(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      if(response.statusCode != 202){
+        throw Exception('Failed to edit');
+      }
+    }else{
       throw Exception('Token not found');
     }
   }

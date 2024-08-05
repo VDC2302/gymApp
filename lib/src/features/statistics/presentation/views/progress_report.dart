@@ -12,6 +12,7 @@ class ProgressReport extends StatefulWidget {
 
 class _ProgressReportState extends State<ProgressReport> {
   ApiService apiService = ApiService();
+  late List<Map<String, dynamic>> _listValue;
   double? _weight;
   double? _chest;
   double? _waist;
@@ -44,16 +45,18 @@ class _ProgressReportState extends State<ProgressReport> {
       final caloriesData = await apiService.getLatestTrackingValue('CALORIES');
 
       setState(() {
-        _weight = weightData?['value'];
-        _chest = chestData?['value'];
-        _waist = waistData?['value'];
-        _hips = hipsData?['value'];
-        _calories = caloriesData?['value'];
+        _weight = weightData?['value'] ?? '';
+        _chest = chestData?['value'] ?? '';
+        _waist = waistData?['value'] ?? '';
+        _hips = hipsData?['value'] ?? '';
+        _calories = caloriesData?['value'] ?? '';
         _weightDate = weightData?['createdDate'] ?? '';
         _chestDate = chestData?['createdDate'] ?? '';
         _waistDate = waistData?['createdDate'] ?? '';
         _hipsDate = hipsData?['createdDate'] ?? '';
         _caloriesDate = caloriesData?['createdDate'] ?? '';
+
+        print('weight: $_weight\nchest: $_chest\nwaist: $_waist\nhips: $_hips\ncalories: $_calories');
       });
     } catch (e) {
       print(e.toString());
@@ -156,7 +159,7 @@ class _ProgressReportState extends State<ProgressReport> {
               ),
               TextField(
                 controller: dateController,
-                decoration: InputDecoration(labelText: 'Date'),
+                decoration: const InputDecoration(labelText: 'Date'),
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
                     context: context,
@@ -232,21 +235,6 @@ class _ProgressReportState extends State<ProgressReport> {
     );
   }
 
-  Widget _buildDaySteps(String text) {
-    return Column(
-      children: [
-        SvgAsset(assetName: stepProgress),
-        YBox(10.dy),
-        AppText(
-          text: '$text  ',
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w500,
-          color: appColors.green,
-        )
-      ],
-    );
-  }
-
   Widget _measureContent(
       String title,
       String type,
@@ -289,7 +277,7 @@ class _ProgressReportState extends State<ProgressReport> {
         ),
         AppText(
           isStartAligned: T,
-          text: date,
+          text: date.isNotEmpty ? date : 'N/A',
           fontSize: 14.sp,
           fontWeight: FontWeight.w400,
           color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
