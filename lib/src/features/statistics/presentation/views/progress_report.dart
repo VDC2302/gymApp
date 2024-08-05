@@ -12,7 +12,6 @@ class ProgressReport extends StatefulWidget {
 
 class _ProgressReportState extends State<ProgressReport> {
   ApiService apiService = ApiService();
-  late List<Map<String, dynamic>> _listValue;
   double? _weight;
   double? _chest;
   double? _waist;
@@ -45,18 +44,16 @@ class _ProgressReportState extends State<ProgressReport> {
       final caloriesData = await apiService.getLatestTrackingValue('CALORIES');
 
       setState(() {
-        _weight = weightData?['value'] ?? '';
-        _chest = chestData?['value'] ?? '';
-        _waist = waistData?['value'] ?? '';
-        _hips = hipsData?['value'] ?? '';
-        _calories = caloriesData?['value'] ?? '';
+        _weight = weightData?['value'];
+        _chest = chestData?['value'];
+        _waist = waistData?['value'];
+        _hips = hipsData?['value'];
+        _calories = caloriesData?['value'];
         _weightDate = weightData?['createdDate'] ?? '';
         _chestDate = chestData?['createdDate'] ?? '';
         _waistDate = waistData?['createdDate'] ?? '';
         _hipsDate = hipsData?['createdDate'] ?? '';
         _caloriesDate = caloriesData?['createdDate'] ?? '';
-
-        print('weight: $_weight\nchest: $_chest\nwaist: $_waist\nhips: $_hips\ncalories: $_calories');
       });
     } catch (e) {
       print(e.toString());

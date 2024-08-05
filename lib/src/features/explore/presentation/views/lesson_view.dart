@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/shared.dart';
+import 'video_player_screen.dart';
 
 class LessonView extends StatelessWidget {
   final Map<String, dynamic> workout;
@@ -54,7 +55,10 @@ class LessonView extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Add functionality to handle tap if needed, e.g., navigate to a lesson detail page
+                showDialog(
+                  context: context,
+                  builder: (context) => VideoPlayerDialog(url: lesson['url']),
+                );
               },
             ),
           );

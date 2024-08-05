@@ -220,8 +220,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> getLatestTrackingValue(
-      String trackingType) async {
+  Future<Map<String, dynamic>?> getLatestTrackingValue(String trackingType) async {
     final token = await getToken();
 
     if (token != null) {
@@ -240,7 +239,6 @@ class ApiService {
         final Map<String, dynamic> latestItem = item.reduce(
               (a, b) => a['id'] > b['id'] ? a : b,
         );
-
         return latestItem;
       } else {
         print('Failed to load value');
