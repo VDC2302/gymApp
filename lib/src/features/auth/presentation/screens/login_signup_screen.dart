@@ -19,13 +19,7 @@ class LoginSignUpScreen extends StatelessWidget {
             splashImage,
             fit: BoxFit.fitHeight,
           ),
-          // Padding(
-          //   padding: const EdgeInsets.all(4.0),
-          //   child: SvgPicture.asset(
-          //     sparkleEffect,
-          //     fit: BoxFit.fitHeight,
-          //   ),
-          // ),
+
           AppColumn(
             height: Dims.deviceSize.height,
             width: Dims.deviceSize.width,
@@ -51,15 +45,15 @@ class LoginSignUpScreen extends StatelessWidget {
                 ),
               ),
               SvgPicture.asset(shoeIcon),
-              YBox(20.dy),
-              Text(
-                'Tailored for you.',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: appColors.white,
-                ),
-              ),
+              // YBox(20.dy),
+              // Text(
+              //   'Tailored for you.',
+              //   style: TextStyle(
+              //     fontSize: 16.sp,
+              //     fontWeight: FontWeight.w600,
+              //     color: appColors.white,
+              //   ),
+              // ),
               YBox(170.dy),
               AppOutlinedButton(
                 text: 'Login',

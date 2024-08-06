@@ -464,7 +464,7 @@ class _HomeViewState extends State<HomeView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => StatisticsView(),
+              builder: (context) => const StatisticsView(),
             ),
           );
         },

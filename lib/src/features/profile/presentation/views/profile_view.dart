@@ -101,7 +101,7 @@ class ProfileView extends HookWidget {
         shape: BoxShape.circle,
         color: appColors.black,
         image: const DecorationImage(
-          image: AssetImage('path/to/profile_picture.png'), // Replace with actual image
+          image: AssetImage('assets/pngs/.png'), // Replace with actual image
           fit: BoxFit.cover,
         ),
       ),
@@ -195,7 +195,7 @@ class ProfileView extends HookWidget {
             onPressed: () async {
               Navigator.of(context).pop(); // Close the dialog
               await ApiService().logout();
-              Navigator.pushReplacementNamed(context, AuthRoutes.loginOrSignUp);
+              Navigator.pushNamedAndRemoveUntil(context, AuthRoutes.loginOrSignUp, (Route<dynamic> route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: appColors.yellow,

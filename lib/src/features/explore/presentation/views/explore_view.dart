@@ -1,10 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:gymApp/src/features/explore/presentation/views/explore_workouts.dart';
 import 'package:gymApp/src/features/explore/presentation/views/my_workout.dart';
 import 'package:gymApp/src/features/explore/presentation/views/nutrition.dart';
+import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymApp/src/features/explore/presentation/views/NutritionForm.dart';
 
 class ExploreView extends HookWidget {
   const ExploreView({super.key});
@@ -20,6 +23,7 @@ class ExploreView extends HookWidget {
       body: Column(
         children: [
           _buildAppBar(
+            context,  // Pass context here
             isFirstPage: isFirstPage.value,
             isLastPage: isLastPage.value,
             onTapBack: () {
@@ -59,12 +63,14 @@ class ExploreView extends HookWidget {
     );
   }
 
-  Widget _buildAppBar({
-    required bool isFirstPage,
-    required bool isLastPage,
-    required VoidCallback onTapBack,
-    required VoidCallback onTapForward,
-  }) {
+  Widget _buildAppBar(
+      BuildContext context,
+      {
+        required bool isFirstPage,
+        required bool isLastPage,
+        required VoidCallback onTapBack,
+        required VoidCallback onTapForward,
+      }) {
     return Container(
       height: 122.dy,
       width: double.infinity,
@@ -90,8 +96,8 @@ class ExploreView extends HookWidget {
                   isFirstPage
                       ? 'Explore Workouts'
                       : isLastPage
-                          ? '  Nutrition  '
-                          : ' My Workout ',
+                      ? '  Nutrition  '
+                      : ' My Workout ',
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
@@ -104,11 +110,30 @@ class ExploreView extends HookWidget {
                     color: isFirstPage
                         ? null
                         : !isLastPage
-                            ? null
-                            : appColors.lightGrey,
+                        ? null
+                        : appColors.lightGrey,
                   ),
                 ),
-                SvgAsset(assetName: timerIcon),
+                GestureDetector(
+                  onTap: () async {
+                    if (isLastPage) {
+                      // Navigate to the NutritionForm screen and await result
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => NutritionForm()),
+                      );
+
+                      // Handle the returned data from the NutritionForm
+                      if (result != null) {
+                        // Do something with the result
+                        print('Form submitted: $result');
+                      }
+                    }
+                  },
+                  child: isLastPage
+                      ? SvgAsset(assetName: addIcon, color: Colors.grey)
+                      : const Icon(CupertinoIcons.search),
+                ),
               ],
             ),
             YBox(5.dy),

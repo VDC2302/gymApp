@@ -198,7 +198,7 @@ class ApiService {
     try {
       final token = await getToken();
       if (token != null) {
-        var data = {'value': value, 'trackingType': trackingType, 'date': date};
+        var data = {'value': value, 'trackingType': trackingType, 'createdDate': date};
         final response = await http.post(
           Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
           headers: {
@@ -405,6 +405,46 @@ class ApiService {
         throw Exception('Failed to register!');
       }
     } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getUserMeal() async{
+    final token = await getToken();
+    
+    if(token != null){
+      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
+      headers: {
+        'Authorization': 'Bearer ${token.jwtToken}'
+      });
+
+      if(response.statusCode == 200){
+        List<dynamic> data = json.decode(response.body);
+        return data.map((item) => item as Map<String, dynamic>).toList();
+      }else{
+        throw Exception('Cannot get today meals');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> postUserMeals(Map<String, dynamic> requestedData) async {
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.post(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${token.jwtToken}'
+          },
+          body: json.encode(requestedData));
+      print(response.statusCode);
+      if(response.statusCode != 202){
+        throw Exception('Failed to post meals');
+      }
+    }else{
       throw Exception('Token not found');
     }
   }
