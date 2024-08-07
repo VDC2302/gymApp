@@ -117,21 +117,28 @@ class ExploreView extends HookWidget {
                 GestureDetector(
                   onTap: () async {
                     if (isLastPage) {
-                      // Navigate to the NutritionForm screen and await result
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => NutritionForm()),
-                      );
+                      // Show the NutritionForm as a dialog
+                      final result = await showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            constraints: BoxConstraints(
+                              maxWidth: 500, // Adjust the width as needed
+                              maxHeight: MediaQuery.of(context).size.height * 0.5, // Adjust the height as needed
+                            ),
+                            child: NutritionForm(),
+                            ),
+                          ),
+                        );
 
-                      // Handle the returned data from the NutritionForm
-                      if (result != null) {
-                        // Do something with the result
-                        print('Form submitted: $result');
+                      if(result != null){
+
                       }
                     }
                   },
                   child: isLastPage
-                      ? SvgAsset(assetName: addIcon, color: Colors.grey)
+                      ? SvgAsset(assetName: addIcon, color: Colors.black)
                       : const Icon(CupertinoIcons.search),
                 ),
               ],

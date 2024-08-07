@@ -233,13 +233,13 @@ class ApiService {
       if (response.statusCode == 202) {
         final List<dynamic> responseData = json.decode(response.body);
 
-        final List<dynamic> item = responseData.where(
-                (item) => item['trackingType'] == trackingType).toList();
+        final Map<String, dynamic> item = responseData.firstWhere(
+                (item) => item['trackingType'] == trackingType,
+        orElse: () => {'value' : 0.0, 'createdDate': 'N/A'});
 
-        final Map<String, dynamic> latestItem = item.reduce(
-              (a, b) => a['id'] > b['id'] ? a : b,
-        );
-        return latestItem;
+        print(item);
+
+        return item;
       } else {
         print('Failed to load value');
       }
@@ -409,7 +409,7 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getUserMeal() async{
+  Future<List<Map<String, dynamic>>?> getUserTodayMeal() async{
     final token = await getToken();
     
     if(token != null){
@@ -422,14 +422,16 @@ class ApiService {
         List<dynamic> data = json.decode(response.body);
         return data.map((item) => item as Map<String, dynamic>).toList();
       }else{
-        throw Exception('Cannot get today meals');
+        print('Cannot get today meal');
+
       }
     }else{
       throw Exception('Token not found');
     }
+    return null;
   }
 
-  Future<void> postUserMeals(Map<String, dynamic> requestedData) async {
+  Future<void> postUserTodayMeals(Map<String, dynamic> requestedData) async {
     final token = await getToken();
 
     if (token != null) {
@@ -440,9 +442,27 @@ class ApiService {
             'Authorization': 'Bearer ${token.jwtToken}'
           },
           body: json.encode(requestedData));
-      print(response.statusCode);
       if(response.statusCode != 202){
         throw Exception('Failed to post meals');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<Map<String, dynamic>> getThisWeekNutrition() async {
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/this-week'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Cannot get this week Nutrition');
       }
     }else{
       throw Exception('Token not found');

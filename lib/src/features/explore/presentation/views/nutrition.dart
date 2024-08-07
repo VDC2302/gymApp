@@ -1,13 +1,15 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/api/api_service.dart';
+import 'NutritionForm.dart';
 
-enum MealType { breakfast, lunch, dinner }
+enum MealType { breakfast, lunch, afternoon, dinner }
 
 enum HealthyRecipe { first, second, third }
 
-enum NutrientCycle { protein, carbs, fat }
+enum NutrientType { calories, protein, fat, carbohydrates }
 
 class Nutrition extends StatefulWidget {
   const Nutrition({super.key});
@@ -17,219 +19,247 @@ class Nutrition extends StatefulWidget {
 }
 
 class _NutritionState extends State<Nutrition>{
-  late Future<List<Map<String, dynamic>>> _mealDataFuture;
+  late Future<Map<MealType, double>> _todayMealDataFuture;
+  late Future<Map<NutrientType, double>> _thisweekNutrientFuture;
 
   @override
   void initState() {
     super.initState();
-    _mealDataFuture = _fetchMealData();
+    _todayMealDataFuture = _getTodayMealData();
+    _thisweekNutrientFuture = _getThisWeekNutrientData();
   }
 
-  Future<List<Map<String, dynamic>>> _fetchMealData() async {
+  Future<Map<MealType, double>> _getTodayMealData() async {
     ApiService apiService = ApiService();
-    return await apiService.getUserMeal();
+    List<Map<String, dynamic>> mealData = await apiService.getUserTodayMeal() ?? [];
+
+    Map<MealType, double> todayCalories = {
+      MealType.breakfast: mealData.firstWhere(
+            (meal) => meal['meal'] == 'BREAKFAST',
+        orElse: () => {'calories': 0.0},
+      )['calories'] as double,
+      MealType.lunch: mealData.firstWhere(
+            (meal) => meal['meal'] == 'LUNCH',
+        orElse: () => {'calories': 0.0},
+      )['calories'] as double,
+      MealType.afternoon: mealData.firstWhere(
+            (meal) => meal['meal'] == 'AFTERNOON',
+        orElse: () => {'calories': 0.0},
+      )['calories'] as double,
+      MealType.dinner: mealData.firstWhere(
+            (meal) => meal['meal'] == 'DINNER',
+        orElse: () => {'calories': 0.0},
+      )['calories'] as double,
+    };
+    return todayCalories;
   }
 
+  Future<Map<NutrientType, double>> _getThisWeekNutrientData() async {
+    ApiService apiService = ApiService();
+    Map<String, dynamic> thisWeekData = await apiService.getThisWeekNutrition();
+
+    return {
+      NutrientType.calories: thisWeekData['calories']?.toDouble() ?? 0.0,
+      NutrientType.protein: thisWeekData['protein']?.toDouble() ?? 0.0,
+      NutrientType.fat: thisWeekData['fat']?.toDouble() ?? 0.0,
+      NutrientType.carbohydrates: thisWeekData['carbohydrates']?.toDouble() ?? 0.0,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _mealDataFuture,
+    return FutureBuilder<Map<MealType, double>>( //today meals
+      future: _todayMealDataFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
-          List<Map<String, dynamic>> mealData = snapshot.data ?? [];
+          Map<MealType, double> todayCalories = snapshot.data ?? {};
 
-          double? breakfastCalories = mealData.firstWhere(
-                (meal) => meal['meal'] == 'BREAKFAST',
-            orElse: () => {'calories': 0.0},
-          )['calories'];
+          return FutureBuilder<Map<NutrientType, double>>(
+            future: _thisweekNutrientFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                Map<NutrientType, double> thisWeekNutrients = snapshot.data ?? {};
 
-          double? lunchCalories = mealData.firstWhere(
-                (meal) => meal['meal'] == 'LUNCH',
-            orElse: () => {'calories': 0.0},
-          )['calories'];
-
-          double? dinnerCalories = mealData.firstWhere(
-                (meal) => meal['meal'] == 'DINNER',
-            orElse: () => {'calories': 0.0},
-          )['calories'];
-
-
-          return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.dx),
-              child: Column(
-                children: [
-                  SparkleContainer(
-                    height: 148.dy,
-                    isBgWhite: true,
-                    padding: EdgeInsets.all(10.dx),
-                    decoration: BoxDecoration(
-                      color: appColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.dx),
+                    child: Column(
                       children: [
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 25.dy),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        SparkleContainer(
+                          height: 170.dy,
+                          isBgWhite: true,
+                          padding: EdgeInsets.all(10.dx),
+                          decoration: BoxDecoration(
+                            color: appColors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text.rich(
-                                TextSpan(
-                                  text: 'NUTRIENT\n',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 20.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 25.dy),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    TextSpan(
-                                      text: 'CYCLE',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15.sp,
-                                        fontWeight: FontWeight.w600,
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'NUTRIENT',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 20.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
+                                    SvgAsset(assetName: nutrientCycle)
                                   ],
                                 ),
                               ),
-                              AppText(
-                                text: 'Close your rings\nto earn tokens',
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w400,
-                              )
+                              Padding(
+                                padding: EdgeInsets.only(right: 5.dx),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _nutrientCycleRow(NutrientType.calories, thisWeekNutrients[NutrientType.calories] ?? 0.0),
+                                    YBox(6.dy),
+                                    _nutrientCycleRow(NutrientType.protein, thisWeekNutrients[NutrientType.protein] ?? 0.0),
+                                    YBox(6.dy),
+                                    _nutrientCycleRow(NutrientType.fat, thisWeekNutrients[NutrientType.fat] ?? 0.0),
+                                    YBox(6.dy),
+                                    _nutrientCycleRow(NutrientType.carbohydrates, thisWeekNutrients[NutrientType.carbohydrates] ?? 0.0),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 12.dx),
-                              child: SvgAsset(assetName: nutrientCycle),
-                            )),
-                        Padding(
-                          padding: EdgeInsets.only(right: 10.dx),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _nutrientCycleRow(NutrientCycle.protein),
-                              YBox(6.dy),
-                              _nutrientCycleRow(NutrientCycle.carbs),
-                              YBox(6.dy),
-                              _nutrientCycleRow(NutrientCycle.fat),
-                            ],
+                        _buildHeaderText('Today Meals'),
+                        SparkleContainer(
+                          height: 75.dy,
+                          isBgWhite: true,
+                          decoration: BoxDecoration(
+                            color: appColors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _todayMealsContent(
+                            MealType.breakfast,
+                            todayCalories[MealType.breakfast] ?? 0.0,
                           ),
                         ),
+                        YBox(15.dy),
+                        SparkleContainer(
+                          height: 75.dy,
+                          decoration: BoxDecoration(
+                            color: appColors.green,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _todayMealsContent(
+                            MealType.lunch,
+                            todayCalories[MealType.lunch] ?? 0.0,
+                          ),
+                        ),
+                        YBox(15.dy),
+                        SparkleContainer(
+                          height: 75.dy,
+                          decoration: BoxDecoration(
+                            color: appColors.grey33,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _todayMealsContent(
+                            MealType.afternoon,
+                            todayCalories[MealType.afternoon] ?? 0.0,
+                          ),
+                        ),
+                        YBox(15.dy),
+                        SparkleContainer(
+                          height: 75.dy,
+                          decoration: BoxDecoration(
+                            color: appColors.black,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _todayMealsContent(
+                            MealType.dinner,
+                            todayCalories[MealType.dinner] ?? 0.0,
+                          ),
+                        ),
+                        _buildHeaderText('Healthy recipes'),
+                        SparkleContainer(
+                          height: 148.dy,
+                          isBgWhite: true,
+                          decoration: BoxDecoration(
+                            color: appColors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _healthRecipeContent(HealthyRecipe.first),
+                        ),
+                        YBox(15.dy),
+                        SparkleContainer(
+                          height: 148.dy,
+                          isBgWhite: true,
+                          decoration: BoxDecoration(
+                            color: appColors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _healthRecipeContent(HealthyRecipe.second),
+                        ),
+                        YBox(15.dy),
+                        SparkleContainer(
+                          height: 148.dy,
+                          isBgWhite: true,
+                          decoration: BoxDecoration(
+                            color: appColors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _healthRecipeContent(HealthyRecipe.third),
+                        ),
+                        YBox(30.dy),
                       ],
                     ),
                   ),
-                  _buildHeaderText('Today Meals'),
-                  SparkleContainer(
-                    height: 75.dy,
-                    isBgWhite: true,
-                    decoration: BoxDecoration(
-                      color: appColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _todayMealsContent(
-                      MealType.breakfast,
-                      breakfastCalories!,
-                    ),
-                  ),
-                  YBox(15.dy),
-                  SparkleContainer(
-                    height: 75.dy,
-                    decoration: BoxDecoration(
-                      color: appColors.black,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _todayMealsContent(
-                      MealType.lunch,
-                      lunchCalories!,
-                    ),
-                  ),
-                  YBox(15.dy),
-                  SparkleContainer(
-                    height: 75.dy,
-                    decoration: BoxDecoration(
-                      color: appColors.green,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _todayMealsContent(
-                      MealType.dinner,
-                      dinnerCalories!,
-                    ),
-                  ),
-                  _buildHeaderText('Healthy recipes'),
-                  SparkleContainer(
-                    height: 148.dy,
-                    isBgWhite: true,
-                    decoration: BoxDecoration(
-                      color: appColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _healthRecipeContent(HealthyRecipe.first),
-                  ),
-                  YBox(15.dy),
-                  SparkleContainer(
-                    height: 148.dy,
-                    isBgWhite: true,
-                    decoration: BoxDecoration(
-                      color: appColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _healthRecipeContent(HealthyRecipe.second),
-                  ),
-                  YBox(15.dy),
-                  SparkleContainer(
-                    height: 148.dy,
-                    isBgWhite: true,
-                    decoration: BoxDecoration(
-                      color: appColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _healthRecipeContent(HealthyRecipe.third),
-                  ),
-                  YBox(30.dy),
-                ],
-              ),
-            ),
+                );
+              }
+            },
           );
         }
       },
     );
   }
 
-  Widget _nutrientCycleRow(NutrientCycle nutrientCycle) {
+  Widget _nutrientCycleRow(NutrientType nutrientType, double value) {
     return Row(
       children: [
         Container(
           height: 6.25.dx,
           width: 6.25.dx,
           decoration: BoxDecoration(
-            color: nutrientCycle == NutrientCycle.protein
+            color: nutrientType == NutrientType.protein
                 ? appColors.yellow
-                : nutrientCycle == NutrientCycle.carbs
-                    ? appColors.green
-                    : appColors.black,
+                : nutrientType == NutrientType.calories
+                ? appColors.green
+                : appColors.black,
             shape: BoxShape.circle,
           ),
         ),
         XBox(10.dx),
         AppText(
-          text: nutrientCycle == NutrientCycle.protein
-              ? 'Proteins'
-              : nutrientCycle == NutrientCycle.carbs
-                  ? 'Carbs'
-                  : 'Fats',
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w400,
+          text: nutrientType == NutrientType.protein
+              ? 'Proteins: $value'
+              : nutrientType == NutrientType.calories
+              ? 'Calories: $value'
+              : nutrientType == NutrientType.fat
+              ? 'Fats: $value'
+              : 'Carbohydrates: $value',
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
         ),
       ],
     );
@@ -325,6 +355,8 @@ class _NutritionState extends State<Nutrition>{
                     ? 'BREAKFAST'
                     : mealType == MealType.lunch
                     ? 'LUNCH'
+                    : mealType == MealType.afternoon
+                    ? 'AFTERNOON'
                     : 'DINNER',
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
@@ -332,7 +364,7 @@ class _NutritionState extends State<Nutrition>{
               ),
               Text.rich(
                   TextSpan(
-                    text: calories.toString() ?? '0',
+                    text: calories.toString(),
                     style: GoogleFonts.inter(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
@@ -344,7 +376,7 @@ class _NutritionState extends State<Nutrition>{
                           style: GoogleFonts.inter(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
-                            color: mealType == MealType.dinner || mealType == MealType.lunch
+                            color: mealType == MealType.dinner || mealType == MealType.lunch || mealType == MealType.afternoon
                               ? appColors.white
                               : appColors.grey80,
                           ),

@@ -21,16 +21,21 @@ class _HomeViewState extends State<HomeView> {
   String? _errorMessage;
   double? _weight;
   double? _calories;
+  double? _foodCalories;
 
   @override
   void initState() {
     super.initState();
     _getFullName();
     _getTrackingValue();
+    _getFoodCalories();
+  }
+
+  Future<void> _getFoodCalories() async {
+    final foodCalories = await apiService.getUserTodayMeal();
   }
 
   Future<void> _getFullName() async {
-    ApiService apiService = ApiService();
     try {
       final fullName = await apiService.getProfile();
       setState(() {
@@ -119,16 +124,6 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 child: _buildActivityContent(HomeAct.second),
               ),
-              // YBox(20.dy),
-              // SparkleContainer(
-              //   height: 128.dy,
-              //   isBgWhite: true,
-              //   decoration: BoxDecoration(
-              //     color: appColors.white,
-              //     borderRadius: BorderRadius.circular(10),
-              //   ),
-              //   child: _buildActivityContent(HomeAct.third),
-              // ),
               YBox(20.dy),
               SparkleContainer(
                 height: 128.dy,
@@ -139,155 +134,13 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 child: _buildActivityContent(HomeAct.fourth),
               ),
-              // Container(
-              //   height: 1.dy,
-              //   width: double.infinity,
-              //   margin: EdgeInsets.symmetric(vertical: 15.dy),
-              //   decoration: BoxDecoration(
-              //     color: appColors.green,
-              //   ),
-              // ),
-              // Container(
-              //   height: 512.dy,
-              //   width: double.infinity,
-              //   padding:
-              //       EdgeInsets.symmetric(vertical: 15.dy, horizontal: 5.dx),
-              //   decoration: BoxDecoration(
-              //     color: appColors.white,
-              //     borderRadius: BorderRadius.circular(10),
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       _buildSplitTexts('Workouts'),
-              //       const Spacer(),
-              //       _buildWorkoutContainer(true),
-              //       YBox(10.dy),
-              //       _buildWorkoutContainer(false),
-              //       const Spacer(),
-              //     ],
-              //   ),
-              // ),
-              // YBox(20.dy),
+
             ],
           ),
         ),
       ),
     );
   }
-
-  //?----------------------------------------------------------------------------------------------------
-
-  // Widget _buildWorkoutContainer(bool isPower) {
-  //   return Column(
-  //     children: [
-  //       Card(
-  //         elevation: 6,
-  //         shadowColor: appColors.white,
-  //         child: Container(
-  //           height: 169.dy,
-  //           decoration: BoxDecoration(
-  //             color: appColors.white,
-  //             borderRadius: BorderRadius.circular(12),
-  //           ),
-  //           child: Row(
-  //             children: [
-  //               Container(
-  //                 width: 280.dx,
-  //                 padding: EdgeInsets.all(10.dx),
-  //                 decoration: BoxDecoration(
-  //                   color: appColors.black,
-  //                   borderRadius: const BorderRadius.horizontal(
-  //                     left: Radius.circular(12),
-  //                   ),
-  //                 ),
-  //                 child: Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.start,
-  //                   children: [
-  //                     Row(
-  //                       mainAxisAlignment: MainAxisAlignment.end,
-  //                       children: [
-  //                         SvgAsset(
-  //                           assetName: trophyIcon,
-  //                           height: 15.dy,
-  //                           width: 13.dx,
-  //                         ),
-  //                         AppText(
-  //                           text: ' Collectables',
-  //                           color: appColors.white,
-  //                           fontSize: 12.sp,
-  //                           fontWeight: FontWeight.w500,
-  //                         ),
-  //                       ],
-  //                     ),
-  //                     YBox(10.dy),
-  //                     AppText(
-  //                       isStartAligned: T,
-  //                       text: isPower
-  //                           ? 'HIGH POWER\nROUTINE'
-  //                           : 'QUICK BURST\nROUTINE',
-  //                       color: appColors.white,
-  //                       fontSize: 15.sp,
-  //                       fontWeight: FontWeight.w700,
-  //                     ),
-  //                     YBox(30.dy),
-  //                     Row(
-  //                       children: [
-  //                         AppText(
-  //                           isStartAligned: T,
-  //                           text: '4 workouts ',
-  //                           color: appColors.white,
-  //                           fontSize: 12.sp,
-  //                           fontWeight: FontWeight.w400,
-  //                         ),
-  //                         Container(
-  //                           height: 8.dy,
-  //                           width: 8.dy,
-  //                           decoration: BoxDecoration(
-  //                             color: appColors.yellow,
-  //                             shape: BoxShape.circle,
-  //                           ),
-  //                           child: Center(
-  //                               child: Icon(
-  //                             Icons.keyboard_arrow_right,
-  //                             size: 8.dx,
-  //                           )),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //               Padding(
-  //                 padding: EdgeInsets.symmetric(vertical: 10.dy)
-  //                     .copyWith(top: 15.dy),
-  //                 child: Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.center,
-  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                   children: [
-  //                     SvgAsset(assetName: addIcon),
-  //                     SvgAsset(assetName: doublePlay),
-  //                     SvgAsset(assetName: nrcIcon),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //       YBox(10.dy),
-  //       Padding(
-  //         padding: EdgeInsets.only(left: 10.dx),
-  //         child: AppText(
-  //           isStartAligned: true,
-  //           text:
-  //               'Build up better health and physique while achieving\nthe ultimate summer body goal!',
-  //           fontSize: 11.sp,
-  //           fontWeight: FontWeight.w500,
-  //         ),
-  //       )
-  //     ],
-  //   );
-  // }
 
   Widget _buildSplitTexts(String text) {
     return Row(
@@ -411,7 +264,16 @@ class _HomeViewState extends State<HomeView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               homeAct == HomeAct.first
-                  ? SvgAsset(assetName: dailyCal)
+                  ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 20.dy),
+                        child: SvgAsset(assetName: dailyCal),
+                      ),
+                      _recordButton(),
+                    ],
+                  )
                   : homeAct == HomeAct.second
                   ? Column(
                   mainAxisSize: MainAxisSize.min,

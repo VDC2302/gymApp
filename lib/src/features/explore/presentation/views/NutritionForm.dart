@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gymApp/src/features/explore/presentation/views/nutrition.dart';
 import 'package:intl/intl.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
+
+import '../../../../shared/shared.dart';
 
 class NutritionForm extends StatefulWidget {
   @override
@@ -51,9 +55,8 @@ class _NutritionFormState extends State<NutritionForm> {
 
       // Call the API
       try {
-        print(requestData);
         ApiService apiService = ApiService();
-        await apiService.postUserMeals(requestData);
+        await apiService.postUserTodayMeals(requestData);
         Navigator.pop(context, requestData);
       } catch (error) {
         // Handle errors
@@ -69,7 +72,7 @@ class _NutritionFormState extends State<NutritionForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nutrition Form'),
+        title: const Text('Nutrition Form'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -79,7 +82,9 @@ class _NutritionFormState extends State<NutritionForm> {
             children: [
               TextFormField(
                 controller: _dateController,
-                decoration: InputDecoration(labelText: 'Date'),
+                decoration: const InputDecoration(
+                    labelText: 'Date',
+                    labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a date';
@@ -103,7 +108,10 @@ class _NutritionFormState extends State<NutritionForm> {
               ),
               TextFormField(
                 controller: _timeController,
-                decoration: const InputDecoration(labelText: 'Time'),
+                decoration: const InputDecoration(
+                  labelText: 'Time',
+                  labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a time';
@@ -137,43 +145,73 @@ class _NutritionFormState extends State<NutritionForm> {
                   children: [
                     TextFormField(
                       controller: entry["foodNameController"],
-                      decoration: InputDecoration(labelText: 'Food Name'),
+                      decoration: InputDecoration(
+                          labelText: 'Food Name',
+                          labelStyle: TextStyle(color: appColors.black, fontWeight: FontWeight.w700)),
                       onSaved: (value) {
                         entry["foodNameController"].text = value ?? '';
                       },
                     ),
-                    TextFormField(
-                      controller: entry["valueController"],
-                      decoration: InputDecoration(labelText: 'Value'),
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        entry["valueController"].text = value ?? '0.0';
-                      },
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: entry["unit"],
-                      items: ["g", "ml"].map((unit) {
-                        return DropdownMenuItem<String>(
-                          value: unit,
-                          child: Text(unit),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          entry["unit"] = value ?? "g";
-                        });
-                      },
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextFormField(
+                            controller: entry["valueController"],
+                            decoration: const InputDecoration(
+                                labelText: 'Value',
+                                labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
+                            keyboardType: TextInputType.number,
+                            onSaved: (value) {
+                              entry["valueController"].text = value ?? '0.0';
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 1),
+                        Expanded(
+                          flex: 1,
+                          child: DropdownButtonFormField<String>(
+                            value: entry["unit"],
+                            items: ["g", "ml"].map((unit) {
+                              return DropdownMenuItem<String>(
+                                value: unit,
+                                child: Center(
+                                  child: Text(unit,
+                                  textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                entry["unit"] = value ?? "g";
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );
-              }),
-              ElevatedButton(
-                onPressed: _addFoodEntry,
-                child: const Text('Add Food'),
-              ),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Submit'),
+              }).toList(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(10),
+                    child: IconButton(
+                      onPressed: _addFoodEntry,
+                      icon: SvgPicture.asset(addIcon, width: 30, height: 30),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('Submit'),
+                  ),
+                ]
               ),
             ],
           ),

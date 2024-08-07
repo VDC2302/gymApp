@@ -76,7 +76,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.white,
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: _measureContent('Calories', 'CALORIES', _weight, _weightDate, _weightController),
+              child: _measureContent('Calories Burned', 'CALORIES', _calories, _caloriesDate, _caloriesController),
             ),
             YBox(30.dy),
             SparkleContainer(
@@ -87,7 +87,7 @@ class _ProgressReportState extends State<ProgressReport> {
                 color: appColors.green,
                 borderRadius: BorderRadius.circular(5),
               ),
-                child: _measureContent('Weight', 'WEIGHT', _calories, _caloriesDate, _caloriesController),
+                child: _measureContent('Weight', 'WEIGHT', _weight, _weightDate, _weightController),
             ),
             YBox(30.dy),
             SparkleContainer(
