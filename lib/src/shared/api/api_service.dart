@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Token {
@@ -463,6 +464,31 @@ class ApiService {
         return json.decode(response.body);
       } else {
         throw Exception('Cannot get this week Nutrition');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> postWorkoutHistory(String exercise, double calories, DateTime createdDate) async {
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/history'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${token.jwtToken}'
+        },
+        body: json.encode({
+          'exercise': exercise,
+          'calories': calories,
+          'createdDate': DateFormat('yyyy-MM-dd').format(createdDate),
+        }),
+      );
+      print(response.body);
+      if(response.statusCode != 202){
+        throw Exception('Error');
       }
     }else{
       throw Exception('Token not found');

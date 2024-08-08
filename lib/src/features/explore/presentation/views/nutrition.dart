@@ -12,83 +12,127 @@ enum HealthyRecipe { first, second, third }
 enum NutrientType { calories, protein, fat, carbohydrates }
 
 class Nutrition extends StatefulWidget {
-  const Nutrition({super.key});
+  final VoidCallback? onFetchData;
+  const Nutrition({super.key, this.onFetchData});
 
   @override
   _NutritionState createState() => _NutritionState();
 }
 
-class _NutritionState extends State<Nutrition>{
+class _NutritionState extends State<Nutrition> {
+  bool isLoading = true;
   late Future<Map<MealType, double>> _todayMealDataFuture;
-  late Future<Map<NutrientType, double>> _thisweekNutrientFuture;
+  late Future<Map<NutrientType, double>> _thisWeekNutrientFuture;
 
   @override
   void initState() {
     super.initState();
+    fetchData();
+    widget.onFetchData?.call();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    fetchData();
+  }
+
+  void fetchData() {
+    print('fetch !!');
+    setState(() {
+      isLoading = true;
+    });
+
+
+    Future<Map<MealType, double>> _getTodayMealData() async {
+      ApiService apiService = ApiService();
+      List<Map<String, dynamic>> mealData = await apiService
+          .getUserTodayMeal() ?? [];
+
+      Map<MealType, double> todayCalories = {
+        MealType.breakfast: mealData.firstWhere(
+              (meal) => meal['meal'] == 'BREAKFAST',
+          orElse: () => {'calories': 0.0},
+        )['calories'] as double,
+        MealType.lunch: mealData.firstWhere(
+              (meal) => meal['meal'] == 'LUNCH',
+          orElse: () => {'calories': 0.0},
+        )['calories'] as double,
+        MealType.afternoon: mealData.firstWhere(
+              (meal) => meal['meal'] == 'AFTERNOON',
+          orElse: () => {'calories': 0.0},
+        )['calories'] as double,
+        MealType.dinner: mealData.firstWhere(
+              (meal) => meal['meal'] == 'DINNER',
+          orElse: () => {'calories': 0.0},
+        )['calories'] as double,
+      };;
+      return todayCalories;
+    }
+
+    Future<Map<NutrientType, double>> _getThisWeekNutrientData() async {
+      ApiService apiService = ApiService();
+      Map<String, dynamic> thisWeekData = await apiService
+          .getThisWeekNutrition();
+
+      return {
+        NutrientType.calories: thisWeekData['calories']?.toDouble() ?? 0.0,
+        NutrientType.protein: thisWeekData['protein']?.toDouble() ?? 0.0,
+        NutrientType.fat: thisWeekData['fat']?.toDouble() ?? 0.0,
+        NutrientType.carbohydrates: thisWeekData['carbohydrates']?.toDouble() ?? 0.0,
+      };
+    }
+
     _todayMealDataFuture = _getTodayMealData();
-    _thisweekNutrientFuture = _getThisWeekNutrientData();
-  }
+    _thisWeekNutrientFuture = _getThisWeekNutrientData();
 
-  Future<Map<MealType, double>> _getTodayMealData() async {
-    ApiService apiService = ApiService();
-    List<Map<String, dynamic>> mealData = await apiService.getUserTodayMeal() ?? [];
 
-    Map<MealType, double> todayCalories = {
-      MealType.breakfast: mealData.firstWhere(
-            (meal) => meal['meal'] == 'BREAKFAST',
-        orElse: () => {'calories': 0.0},
-      )['calories'] as double,
-      MealType.lunch: mealData.firstWhere(
-            (meal) => meal['meal'] == 'LUNCH',
-        orElse: () => {'calories': 0.0},
-      )['calories'] as double,
-      MealType.afternoon: mealData.firstWhere(
-            (meal) => meal['meal'] == 'AFTERNOON',
-        orElse: () => {'calories': 0.0},
-      )['calories'] as double,
-      MealType.dinner: mealData.firstWhere(
-            (meal) => meal['meal'] == 'DINNER',
-        orElse: () => {'calories': 0.0},
-      )['calories'] as double,
-    };
-    return todayCalories;
-  }
-
-  Future<Map<NutrientType, double>> _getThisWeekNutrientData() async {
-    ApiService apiService = ApiService();
-    Map<String, dynamic> thisWeekData = await apiService.getThisWeekNutrition();
-
-    return {
-      NutrientType.calories: thisWeekData['calories']?.toDouble() ?? 0.0,
-      NutrientType.protein: thisWeekData['protein']?.toDouble() ?? 0.0,
-      NutrientType.fat: thisWeekData['fat']?.toDouble() ?? 0.0,
-      NutrientType.carbohydrates: thisWeekData['carbohydrates']?.toDouble() ?? 0.0,
-    };
+    Future.wait([_todayMealDataFuture, _thisWeekNutrientFuture]).then((_) {
+      setState(() {
+        isLoading = false;
+      });
+    }).catchError((error) {
+      setState(() {
+        isLoading = false;
+      });
+      // Handle the error if needed
+      print('Error: $error');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<MealType, double>>( //today meals
-      future: _todayMealDataFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          Map<MealType, double> todayCalories = snapshot.data ?? {};
+    return Scaffold(
+      backgroundColor: appColors.lightGrey,
+      floatingActionButton: FloatingActionButton(
+        onPressed: fetchData, // Call the method to refresh the data
+        child: const Icon(Icons.refresh),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : FutureBuilder<Map<MealType, double>>(
+        future: _todayMealDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            Map<MealType, double> todayCalories = snapshot.data ?? {};
 
-          return FutureBuilder<Map<NutrientType, double>>(
-            future: _thisweekNutrientFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else {
-                Map<NutrientType, double> thisWeekNutrients = snapshot.data ?? {};
+            return FutureBuilder<Map<NutrientType, double>>(
+              future: _thisWeekNutrientFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  Map<NutrientType, double> thisWeekNutrients =
+                      snapshot.data ?? {};
 
-                return SingleChildScrollView(
+
+                  return SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15.dx),
                     child: Column(
@@ -108,7 +152,8 @@ class _NutritionState extends State<Nutrition>{
                                 padding: EdgeInsets.only(bottom: 25.dy),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceBetween,
                                   children: [
                                     Text.rich(
                                       TextSpan(
@@ -129,13 +174,22 @@ class _NutritionState extends State<Nutrition>{
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _nutrientCycleRow(NutrientType.calories, thisWeekNutrients[NutrientType.calories] ?? 0.0),
+                                    _nutrientCycleRow(NutrientType.calories,
+                                        thisWeekNutrients[NutrientType
+                                            .calories] ?? 0.0),
                                     YBox(6.dy),
-                                    _nutrientCycleRow(NutrientType.protein, thisWeekNutrients[NutrientType.protein] ?? 0.0),
+                                    _nutrientCycleRow(NutrientType.protein,
+                                        thisWeekNutrients[NutrientType
+                                            .protein] ?? 0.0),
                                     YBox(6.dy),
-                                    _nutrientCycleRow(NutrientType.fat, thisWeekNutrients[NutrientType.fat] ?? 0.0),
+                                    _nutrientCycleRow(NutrientType.fat,
+                                        thisWeekNutrients[NutrientType.fat] ??
+                                            0.0),
                                     YBox(6.dy),
-                                    _nutrientCycleRow(NutrientType.carbohydrates, thisWeekNutrients[NutrientType.carbohydrates] ?? 0.0),
+                                    _nutrientCycleRow(
+                                        NutrientType.carbohydrates,
+                                        thisWeekNutrients[NutrientType
+                                            .carbohydrates] ?? 0.0),
                                   ],
                                 ),
                               ),
@@ -222,17 +276,18 @@ class _NutritionState extends State<Nutrition>{
                           child: _healthRecipeContent(HealthyRecipe.third),
                         ),
                         YBox(30.dy),
-                      ],
-                    ),
-                  ),
-                );
-              }
-            },
-          );
-        }
-      },
+    ],
+    ),
+    ),
     );
-  }
+    }
+    },
+    );
+    }
+    },
+    ),
+    );
+    }
 
   Widget _nutrientCycleRow(NutrientType nutrientType, double value) {
     return Row(
@@ -279,8 +334,8 @@ class _NutritionState extends State<Nutrition>{
                 text: healthyRecipe == HealthyRecipe.first
                     ? 'Chicken & spinach\nSkillet'
                     : healthyRecipe == HealthyRecipe.second
-                        ? 'Rice and vegetable\nsauce'
-                        : 'Fruity splash\n  ',
+                    ? 'Rice and vegetable\nsauce'
+                    : 'Fruity splash\n  ',
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -290,8 +345,8 @@ class _NutritionState extends State<Nutrition>{
                   text: healthyRecipe == HealthyRecipe.first
                       ? 'High protein\nmeal'
                       : healthyRecipe == HealthyRecipe.second
-                          ? 'Balanced carbs\nmeal'
-                          : 'Vitamin packed\nmeal',
+                      ? 'Balanced carbs\nmeal'
+                      : 'Vitamin packed\nmeal',
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -307,8 +362,8 @@ class _NutritionState extends State<Nutrition>{
                   text: healthyRecipe == HealthyRecipe.first
                       ? '15%Proteins'
                       : healthyRecipe == HealthyRecipe.second
-                          ? '15%Proteins'
-                          : '0%Proteins',
+                      ? '15%Proteins'
+                      : '0%Proteins',
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -317,8 +372,8 @@ class _NutritionState extends State<Nutrition>{
                   text: healthyRecipe == HealthyRecipe.first
                       ? '10%Carbs'
                       : healthyRecipe == HealthyRecipe.second
-                          ? '40%Carbs'
-                          : '50%Vitamins',
+                      ? '40%Carbs'
+                      : '50%Vitamins',
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -327,8 +382,8 @@ class _NutritionState extends State<Nutrition>{
                   text: healthyRecipe == HealthyRecipe.first
                       ? '13%Fat'
                       : healthyRecipe == HealthyRecipe.second
-                          ? '10%Fat'
-                          : '2%Fat',
+                      ? '10%Fat'
+                      : '2%Fat',
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -363,26 +418,30 @@ class _NutritionState extends State<Nutrition>{
                 color: mealType != MealType.breakfast ? appColors.white : null,
               ),
               Text.rich(
-                  TextSpan(
-                    text: calories.toString(),
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: mealType != MealType.breakfast ? appColors.white : null,
-                    ),
-                      children: [
-                        TextSpan(
-                          text: ' CAL',
-                          style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                            color: mealType == MealType.dinner || mealType == MealType.lunch || mealType == MealType.afternoon
-                              ? appColors.white
-                              : appColors.grey80,
-                          ),
-                        ),
-                      ],
+                TextSpan(
+                  text: calories.toString(),
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: mealType != MealType.breakfast
+                        ? appColors.white
+                        : null,
                   ),
+                  children: [
+                    TextSpan(
+                      text: ' CAL',
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: mealType == MealType.dinner ||
+                            mealType == MealType.lunch ||
+                            mealType == MealType.afternoon
+                            ? appColors.white
+                            : appColors.grey80,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

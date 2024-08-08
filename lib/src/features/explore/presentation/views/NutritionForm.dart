@@ -7,6 +7,10 @@ import 'package:gymApp/src/shared/api/api_service.dart';
 import '../../../../shared/shared.dart';
 
 class NutritionForm extends StatefulWidget {
+  final VoidCallback? onSubmit;
+
+  const NutritionForm({super.key, this.onSubmit});
+
   @override
   _NutritionFormState createState() => _NutritionFormState();
 }
@@ -57,6 +61,18 @@ class _NutritionFormState extends State<NutritionForm> {
       try {
         ApiService apiService = ApiService();
         await apiService.postUserTodayMeals(requestData);
+        // Nutrition nutrition = const Nutrition();
+        // final state = nutrition.createState();
+        // state.fetchData();
+        // Nutrition(
+        //   onFetchData: () {
+        //     final state = const Nutrition(key: PageStorageKey('Nutrition')).createState();
+        //     state.fetchData();
+        //   },
+        // );
+        Nutrition nutrition = const Nutrition();
+        final state = const Nutrition().createState();
+        state.fetchData();
         Navigator.pop(context, requestData);
       } catch (error) {
         // Handle errors
@@ -82,6 +98,7 @@ class _NutritionFormState extends State<NutritionForm> {
             children: [
               TextFormField(
                 controller: _dateController,
+                readOnly: true,
                 decoration: const InputDecoration(
                     labelText: 'Date',
                     labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
@@ -108,6 +125,7 @@ class _NutritionFormState extends State<NutritionForm> {
               ),
               TextFormField(
                 controller: _timeController,
+                readOnly: true,
                 decoration: const InputDecoration(
                   labelText: 'Time',
                   labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)

@@ -18,12 +18,20 @@ class ExploreView extends HookWidget {
     final isFirstPage = useState<bool>(true);
     final isLastPage = useState<bool>(false);
 
+    void onNutritionFormSubmit() {
+      // Trigger data fetch or any other action you need on form submission
+      final state = pageController.page == 2
+          ? const Nutrition(key: PageStorageKey('Nutrition')).createState()
+          : null;
+      state?.fetchData();
+    }
+
     return Scaffold(
       backgroundColor: appColors.lightGrey,
       body: Column(
         children: [
           _buildAppBar(
-            context,  // Pass context here
+            context,
             isFirstPage: isFirstPage.value,
             isLastPage: isLastPage.value,
             onTapBack: () {
@@ -51,10 +59,18 @@ class ExploreView extends HookWidget {
                 isFirstPage.value = (value == 0);
                 isLastPage.value = (value == 2);
               },
-              children: const [
-                ExploreWorkouts(),
-                MyWorkout(),
-                Nutrition(),
+              children: [
+                const ExploreWorkouts(),
+                const MyWorkout(),
+                Nutrition(
+                  key: const PageStorageKey('Nutrition'),
+                  onFetchData: () {
+                    final state = pageController.page == 2
+                        ? const Nutrition(key: PageStorageKey('Nutrition')).createState()
+                        : null;
+                    state?.fetchData();
+                  },
+                ),
               ],
             ),
           ),
@@ -118,7 +134,7 @@ class ExploreView extends HookWidget {
                   onTap: () async {
                     if (isLastPage) {
                       // Show the NutritionForm as a dialog
-                      final result = await showDialog(
+                      await showDialog(
                         context: context,
                         builder: (context) => Dialog(
                           child: Container(
@@ -128,13 +144,9 @@ class ExploreView extends HookWidget {
                               maxHeight: MediaQuery.of(context).size.height * 0.5, // Adjust the height as needed
                             ),
                             child: NutritionForm(),
-                            ),
                           ),
-                        );
-
-                      if(result != null){
-
-                      }
+                        ),
+                      );
                     }
                   },
                   child: isLastPage

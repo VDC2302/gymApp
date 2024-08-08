@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
+import 'package:intl/intl.dart';
 
 enum HomeAct { first, second, third, fourth }
 
@@ -323,12 +324,7 @@ class _HomeViewState extends State<HomeView> {
     return BounceInAnimation(
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const StatisticsView(),
-            ),
-          );
+          _showExerciseDialog();
         },
         child: Container(
           height: 27.dy,
@@ -391,6 +387,78 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showExerciseDialog() async {
+    final TextEditingController exerciseController = TextEditingController();
+    final TextEditingController caloriesController = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Record Workout History'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: exerciseController,
+                  decoration: InputDecoration(hintText: 'Exercise Name'),
+                ),
+                TextField(
+                  controller: caloriesController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(hintText: 'Calories'),
+                ),
+                SizedBox(height: 20),
+                Text('Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}'),
+                ElevatedButton(
+                  onPressed: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null && pickedDate != selectedDate) {
+                      setState(() {
+                        selectedDate = pickedDate;
+                      });
+                    }
+                  },
+                  child: Text('Pick a Date'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Save'),
+              onPressed: () async {
+                try {
+                  await apiService.postWorkoutHistory(
+                    exerciseController.text,
+                    double.parse(caloriesController.text),
+                    selectedDate,
+                  );
+                  Navigator.of(context).pop(); // Close the dialog
+                } catch (e) {
+                  print('Error: $e');
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -157,6 +157,7 @@ class _ProgressReportState extends State<ProgressReport> {
               TextField(
                 controller: dateController,
                 decoration: const InputDecoration(labelText: 'Date'),
+                readOnly: true,
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
                     context: context,
