@@ -11,6 +11,8 @@ class TopContainer extends StatelessWidget {
     required this.pageController,
   });
 
+
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -36,14 +38,6 @@ class TopContainer extends StatelessWidget {
                     height: 2.5,
                   ),
                 ),
-                Text(
-                  'This helps us customize your fitness experience',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: appColors.grey,
-                  ),
-                ),
               ],
             )
           : Column(
@@ -67,46 +61,14 @@ class TopContainer extends StatelessWidget {
                     Text(
                       currentPage == 1
                           ? 'How old are you ?'
-                          : currentPage == 2
-                              ? 'How much do you weigh ?'
-                              : currentPage == 3
-                                  ? 'What is your height ?'
-                                  : currentPage == 4
-                                      ? 'Please select your Goals'
-                                      : currentPage == 5
-                                          ? 'What is your physical activity level ?'
-                                          : currentPage == 6
-                                              ? 'You\'re all set now you can move'
-                                              : '',
+                          : 'abc',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Spacer(flex: 3),
                   ],
-                ),
-                YBox(10.dy),
-                Text(
-                  currentPage == 1
-                      ? 'This helps us customize your fitness experience'
-                      : currentPage == 2
-                          ? 'This helps us customize your fitness experience'
-                          : currentPage == 3
-                              ? 'This helps us customize your fitness experience'
-                              : currentPage == 4
-                                  ? '    You can select more than one\n     you can also make changes later'
-                                  : currentPage == 5
-                                      ? 'You can select only one\nyou can also make changes later'
-                                      : currentPage == 6
-                                          ? '     Weldon! you have earned your\n    first move mint'
-                                          : '',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: appColors.grey,
-                  ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),

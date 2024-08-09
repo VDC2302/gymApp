@@ -38,10 +38,10 @@ class OnboardingScreen extends HookWidget {
                       Expanded(
                         child: SmoothPageIndicator(
                           controller: pageController,
-                          count: 7,
+                          count: 2,
                           effect: JumpingDotEffect(
                             dotHeight: 3,
-                            dotWidth: 38.dx,
+                            dotWidth: 150.dx,
                             activeDotColor: theme.colorScheme.primary,
                             dotColor: theme.colorScheme.secondary,
                           ),
@@ -68,26 +68,26 @@ class OnboardingScreen extends HookWidget {
                       currentPage: currentPage.value,
                       pageController: pageController,
                     ),
-                    ThirdView(
-                      currentPage: currentPage.value,
-                      pageController: pageController,
-                    ),
-                    FourthView(
-                      currentPage: currentPage.value,
-                      pageController: pageController,
-                    ),
-                    FifthView(
-                      currentPage: currentPage.value,
-                      pageController: pageController,
-                    ),
-                    SixthView(
-                      currentPage: currentPage.value,
-                      pageController: pageController,
-                    ),
-                    SeventhView(
-                      currentPage: currentPage.value,
-                      pageController: pageController,
-                    ),
+                    // ThirdView(
+                    //   currentPage: currentPage.value,
+                    //   pageController: pageController,
+                    // ),
+                    // FourthView(
+                    //   currentPage: currentPage.value,
+                    //   pageController: pageController,
+                    // ),
+                    // FifthView(
+                    //   currentPage: currentPage.value,
+                    //   pageController: pageController,
+                    // ),
+                    // SixthView(
+                    //   currentPage: currentPage.value,
+                    //   pageController: pageController,
+                    // ),
+                    // SeventhView(
+                    //   currentPage: currentPage.value,
+                    //   pageController: pageController,
+                    // ),
                   ],
                 ),
               ),
@@ -97,7 +97,7 @@ class OnboardingScreen extends HookWidget {
                 child: AppButton(
                   title: 'Continue',
                   onTap: () {
-                    if (currentPage.value == 6) {
+                    if (currentPage.value == 1) {
                       AppNavigator.pushNamed(HomeRoutes.main);
                     } else {
                       pageController.nextPage(

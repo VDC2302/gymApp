@@ -94,14 +94,14 @@ class ProfileView extends HookWidget {
 
   Widget _buildProfilePicture(Map<String, dynamic> data) {
     return Container(
-      margin: EdgeInsets.only(top: 30.dy),
-      height: 200.dy,
-      width: 200.dy,
+      margin: EdgeInsets.only(top: 20.dy),
+      height: 130.dy,
+      width: 130.dy,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: appColors.black,
+        color: appColors.white,
         image: const DecorationImage(
-          image: AssetImage('assets/pngs/.png'), // Replace with actual image
+          image: AssetImage('assets/pngs/app-icon.png'),
           fit: BoxFit.cover,
         ),
       ),
@@ -122,31 +122,53 @@ class ProfileView extends HookWidget {
           Text(
             'First Name: ${data['firstName']}',
             style: GoogleFonts.lato(
-              fontSize: 25.sp,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w600,
               color: appColors.grey33,
             ),
           ),
-          SizedBox(height: 10.dy), // Add spacing
+          SizedBox(height: 5.dy), // Add spacing
           Divider(color: appColors.grey.withOpacity(0.3)),
-          SizedBox(height: 10.dy), // Add spacing
+          SizedBox(height: 5.dy), // Add spacing
           Text(
             'Last Name:  ${data['lastName']}',
             style: GoogleFonts.lato(
-              fontSize: 25.sp,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w600,
               color: appColors.grey33,
             ),
           ),
-          SizedBox(height: 10.dy), // Add spacing
+          SizedBox(height: 5.dy), // Add spacing
           Divider(color: appColors.grey.withOpacity(0.3)),
-          SizedBox(height: 10.dy), // Add spacing
+          SizedBox(height: 5.dy), // Add spacing
           Text(
             'Gender: ${data['gender']}',
             style: GoogleFonts.lato(
-              fontSize: 25.sp,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w600,
-              color: appColors.grey.withOpacity(.5),
+              color: appColors.grey33,
+            ),
+          ),
+          SizedBox(height: 5.dy),
+          Divider(color: appColors.grey.withOpacity(0.3)),
+          SizedBox(height: 5.dy), // Add spacing
+          Text(
+            'Birth Year: ${data['birthYear']}',
+            style: GoogleFonts.lato(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              color: appColors.grey33,
+            ),
+          ),
+          SizedBox(height: 5.dy),
+          Divider(color: appColors.grey.withOpacity(0.3)),
+          SizedBox(height: 5.dy), // Add spacing
+          Text(
+            'Height: ${data['height']} cm \t\t\t\t\t Weight : ${data['weight']}',
+            style: GoogleFonts.lato(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              color: appColors.grey33,
             ),
           ),
         ],

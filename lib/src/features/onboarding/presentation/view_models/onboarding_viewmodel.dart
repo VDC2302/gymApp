@@ -8,7 +8,12 @@ final onboardingProvider = ChangeNotifierProvider((ref) {
 
 class OnboardingViewModel extends ChangeNotifier {
   Gender gender = Gender.male;
-  List<String> ageRanges = ['18 - 22', '23 - 29', '30 - 35', '36 - 40'];
+  List<String> ageRanges = [
+    'SEDENTARY',
+    'LIGHTLY',
+    'MODERATELY',
+    'VERY',
+    'SUPER'];
   List<String> weightRanges = [
     '50 - 59 kg',
     '60 - 69 kg',

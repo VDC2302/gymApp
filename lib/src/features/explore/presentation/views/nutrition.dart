@@ -38,7 +38,6 @@ class _NutritionState extends State<Nutrition> {
   }
 
   void fetchData() {
-    print('fetch !!');
     setState(() {
       isLoading = true;
     });
@@ -66,7 +65,7 @@ class _NutritionState extends State<Nutrition> {
               (meal) => meal['meal'] == 'DINNER',
           orElse: () => {'calories': 0.0},
         )['calories'] as double,
-      };;
+      };
       return todayCalories;
     }
 
@@ -76,10 +75,10 @@ class _NutritionState extends State<Nutrition> {
           .getThisWeekNutrition();
 
       return {
-        NutrientType.calories: thisWeekData['calories']?.toDouble() ?? 0.0,
-        NutrientType.protein: thisWeekData['protein']?.toDouble() ?? 0.0,
-        NutrientType.fat: thisWeekData['fat']?.toDouble() ?? 0.0,
-        NutrientType.carbohydrates: thisWeekData['carbohydrates']?.toDouble() ?? 0.0,
+        NutrientType.calories: thisWeekData['weeklyCalories'] ?? 0.0,
+        NutrientType.protein: thisWeekData['weeklyProtein'] ?? 0.0,
+        NutrientType.fat: thisWeekData['weeklyFat'] ?? 0.0,
+        NutrientType.carbohydrates: thisWeekData['weeklyCarbohydrates'] ?? 0.0,
       };
     }
 
@@ -276,18 +275,18 @@ class _NutritionState extends State<Nutrition> {
                           child: _healthRecipeContent(HealthyRecipe.third),
                         ),
                         YBox(30.dy),
-    ],
-    ),
-    ),
+                      ],
+                    ),
+                  ),
+                  );
+                }
+                },
+            );
+          }
+          },
+      ),
     );
-    }
-    },
-    );
-    }
-    },
-    ),
-    );
-    }
+  }
 
   Widget _nutrientCycleRow(NutrientType nutrientType, double value) {
     return Row(

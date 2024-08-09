@@ -14,6 +14,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _birthYearController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _selectedGender;
@@ -30,6 +31,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final result = await apiService.register(
       _firstNameController.text,
       _lastNameController.text,
+      int.parse(_birthYearController.text),
       _usernameController.text,
       _passwordController.text,
       _selectedGender,
@@ -87,6 +89,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _lastNameController,
                   labelText: 'Last Name'
               ),
+
+              AppTextField(
+                  controller: _birthYearController,
+                  labelText: 'Birth Year'
+              ),
+
 
               AppTextField(
                   controller: _usernameController,

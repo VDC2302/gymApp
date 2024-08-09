@@ -32,9 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = false;
     });
+    final checkTarget = await apiService.checkTarget();
 
     if (result != null && result['success'] == true) {
-      Navigator.pushReplacementNamed(context, HomeRoutes.main);
+      Navigator.pushReplacementNamed(context, checkTarget == true ? HomeRoutes.main : AuthRoutes.onboarding);
     }else{
       print(result);
       setState(() {

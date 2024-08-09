@@ -58,26 +58,6 @@ class ApiService {
     return jwtToken != null;
   }
 
-  // Future<void> fetchData() async{
-  //   Token? token = await getToken();
-  //
-  //   if(token != null){
-  //     final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
-  //       headers: {
-  //         'Authorization': 'Bearer ${token.jwtToken}',
-  //       },);
-  //
-  //     if(response.statusCode == 202){
-  //       //handle response
-  //       print('Data: ${response.body}');
-  //     }else{
-  //       //handle error
-  //       print('Failed to load data');
-  //     }
-  //   }else{
-  //     print('Token not found');
-  //   }
-  // }
 
   Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
@@ -117,13 +97,38 @@ class ApiService {
     }
   }
 
+  Future<bool> checkTarget() async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile/is-target'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}',
+        },
+      );
+      if(response.statusCode == 202){
+        if(response.body.isNotEmpty){
+          return json.decode(response.body) as bool;
+        }else{
+          return false;
+        }
+      }else{
+        return false;
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
 
   Future<Map<String, dynamic>?> register(String firstName, String lastName,
-      String username, String password, String? gender) async {
+      int birthYear, String username, String password, String? gender) async {
     try {
       var data = {
         'firstName': firstName,
         'lastName': lastName,
+        'birthYear': birthYear,
         'username': username,
         'password': password,
         'gender': gender
@@ -171,6 +176,23 @@ class ApiService {
       }
     }
     return null;
+  }
+
+  Future<void> editProfile(double weight, double height, String activity) async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.put(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}'
+        },);
+      if (response.statusCode != 202) {
+        throw Exception('Failed to update data');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
   }
 
   Future<List<String>?> getTrackingTypes() async {
@@ -410,26 +432,36 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>?> getUserTodayMeal() async{
+  Future<List<Map<String, dynamic>>?> getUserTodayMeal() async {
     final token = await getToken();
-    
-    if(token != null){
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
-      headers: {
-        'Authorization': 'Bearer ${token.jwtToken}'
-      });
 
-      if(response.statusCode == 200){
-        List<dynamic> data = json.decode(response.body);
-        return data.map((item) => item as Map<String, dynamic>).toList();
-      }else{
-        print('Cannot get today meal');
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}',
+        },
+      );
 
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          Map<String, dynamic> data = json.decode(response.body);
+
+          // Extract the mealNutritionList from the response
+          List<dynamic> mealNutritionList = data['mealNutritionList'] ?? [];
+
+          return mealNutritionList.map((item) => item as Map<String, dynamic>).toList();
+        } else {
+          // Handle empty response body
+          return [];
+        }
+      } else {
+        // Handle non-200 status codes
+        return [];
       }
-    }else{
+    } else {
       throw Exception('Token not found');
     }
-    return null;
   }
 
   Future<void> postUserTodayMeals(Map<String, dynamic> requestedData) async {
@@ -463,7 +495,7 @@ class ApiService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception('Cannot get this week Nutrition');
+        return {};
       }
     }else{
       throw Exception('Token not found');

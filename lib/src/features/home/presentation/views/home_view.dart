@@ -200,14 +200,14 @@ class _HomeViewState extends State<HomeView> {
               homeAct == HomeAct.first
                   ? Text.rich(
                       TextSpan(
-                        text: '   $_calories',    //kcal
+                        text: '   $_calories',
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                         ),
                         children: [
                           TextSpan(
-                            text: 'kcal',
+                            text: ' CAL',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
@@ -227,7 +227,7 @@ class _HomeViewState extends State<HomeView> {
                           ),
                           children: [
                             TextSpan(
-                              text: 'kg',
+                              text: ' kg',
                               style: GoogleFonts.inter(
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w500,
@@ -450,6 +450,7 @@ class _HomeViewState extends State<HomeView> {
                     double.parse(caloriesController.text),
                     selectedDate,
                   );
+                  await _getTrackingValue();
                   Navigator.of(context).pop(); // Close the dialog
                 } catch (e) {
                   print('Error: $e');
