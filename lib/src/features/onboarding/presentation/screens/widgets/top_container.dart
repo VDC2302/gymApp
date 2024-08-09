@@ -1,6 +1,9 @@
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+
+import '../../../../../shared/api/api_service.dart';
 
 class TopContainer extends StatelessWidget {
   final int currentPage;
@@ -15,6 +18,7 @@ class TopContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 15.dy),
@@ -23,7 +27,7 @@ class TopContainer extends StatelessWidget {
           ? Column(
               children: [
                 Text(
-                  'Welcome Simi !',
+                  'Welcome !',
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
@@ -60,14 +64,14 @@ class TopContainer extends StatelessWidget {
                     const Spacer(flex: 2),
                     Text(
                       currentPage == 1
-                          ? 'How old are you ?'
-                          : 'abc',
+                          ? 'Set Your Activity Levels'
+                          : '',
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const Spacer(flex: 3),
+                    const Spacer(flex: 4),
                   ],
                 ),
               ],

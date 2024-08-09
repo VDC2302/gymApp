@@ -16,8 +16,8 @@ class SecondView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final ageRanges = ref.watch(onboardingProvider).ageRanges;
-    final ageRange = ref.watch(onboardingProvider).ageRange;
+    final activityFrequencies = ref.watch(onboardingProvider).activityFrequencies;
+    final activityFrequency = ref.watch(onboardingProvider).activityFrequency;
 
     return Column(
       children: [
@@ -29,14 +29,14 @@ class SecondView extends ConsumerWidget {
         AppColumn(
           padding: EdgeInsets.symmetric(horizontal: 30.dx),
           children: List.generate(
-            ageRanges.length,
+            activityFrequencies.length,
             (index) => CustomTile(
-              text: ageRanges[index],
-              isSelected: ageRange == ageRanges[index],
+              text: activityFrequencies[index],
+              isSelected: activityFrequency == activityFrequencies[index],
               onTap: () {
                 ref
                     .read(onboardingProvider.notifier)
-                    .selectAgeRange(ageRanges[index]);
+                    .selectActivityFreq(activityFrequencies[index]);
               },
             ),
           ),

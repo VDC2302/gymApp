@@ -27,7 +27,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    _getFullName();
+    _getFirstName();
     _getTrackingValue();
     _getFoodCalories();
   }
@@ -36,11 +36,11 @@ class _HomeViewState extends State<HomeView> {
     final foodCalories = await apiService.getUserTodayMeal();
   }
 
-  Future<void> _getFullName() async {
+  Future<void> _getFirstName() async {
     try {
-      final fullName = await apiService.getProfile();
+      final firstName = await apiService.getProfile();
       setState(() {
-        _firstName = fullName?['firstName'];
+        _firstName = firstName?['firstName'];
         _isLoading = false;
       });
     } catch (e) {

@@ -15,7 +15,8 @@ class FirstView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final gender = ref.watch(onboardingProvider).gender;
+    final weightController = TextEditingController();
+    final heightController = TextEditingController();
 
     return Column(
       children: [
@@ -24,42 +25,50 @@ class FirstView extends ConsumerWidget {
           pageController: pageController,
         ),
         YBox(70.dy),
-        _buildGenderContainer(true, ref, isSelected: gender == Gender.male),
+        _buildInputField(
+          controller: weightController,
+          label: 'Weight (kg)',
+        ),
         YBox(30.dy),
-        _buildGenderContainer(false, ref, isSelected: gender == Gender.female),
+        _buildInputField(
+          controller: heightController,
+          label: 'Height (cm)',
+        ),
       ],
     );
   }
 
-  Widget _buildGenderContainer(bool isMale, WidgetRef ref,
-      {bool isSelected = false}) {
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+  }) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // Align label to the left
       children: [
-        GestureDetector(
-          onTap: () {
-            ref.read(onboardingProvider.notifier).selectGender(isMale);
-          },
-          child: Container(
-            height: 96.25.dy,
-            width: 138.dx,
-            // padding: EdgeInsets.all(11.dx),
-            decoration: BoxDecoration(
-              color: appColors.white,
-              borderRadius: BorderRadius.circular(11),
-              border: isSelected ? Border.all(color: appColors.green) : null,
-            ),
-            child: Icon(
-              isMale ? Icons.male : Icons.female,
-              size: 105.25,
-            ),
+        Text(
+          label, // Display the label text
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.black, // Set label color to black
           ),
         ),
-        YBox(10.dy),
-        Text(
-          isMale ? 'Male' : 'Female',
-          style: TextStyle(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
+        YBox(10.dy), // Add some space between the label and the input field
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.dx),
+          decoration: BoxDecoration(
+            color: appColors.white, // White background color
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(color: appColors.grey),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Enter your $label',
+              hintStyle: TextStyle(color: appColors.grey), // Hint text style
+            ),
           ),
         ),
       ],
