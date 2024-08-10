@@ -97,7 +97,7 @@ class ApiService {
     }
   }
 
-  Future<bool> checkTarget() async{
+  Future<String> checkTarget() async{
     final token = await getToken();
 
     if (token != null) {
@@ -107,17 +107,46 @@ class ApiService {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
       );
+      print(response.statusCode);
       if(response.statusCode == 202){
         if(response.body.isNotEmpty){
-          return json.decode(response.body) as bool;
+          return json.decode(response.body).toString();
         }else{
-          return false;
+          return 'false';
         }
       }else{
-        return false;
+        return 'admin';
       }
     }else{
       throw Exception('Token not found');
+    }
+  }
+
+  Future<void> postUserTarget({
+    required double weight,
+    required double height,
+    required String activityFrequency}) async{
+
+    final token = await getToken();
+    final data = {
+      'weight': weight,
+      'height': height,
+      'activityFrequency': activityFrequency,
+    };
+
+    if (token != null) {
+      final response = await http.put(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${token.jwtToken}'
+        },
+          body: json.encode(data)
+      );
+      print(response.statusCode);
+      if(response.statusCode != 202){
+        throw Exception('Failed to submit data');
+      }
     }
   }
 
@@ -431,6 +460,30 @@ class ApiService {
       throw Exception('Token not found');
     }
   }
+  Future<Map<String,dynamic>> getUserTodayCalories() async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}',
+        },
+      );
+      if(response.statusCode == 200){
+        if(response.body.isNotEmpty){
+          Map<String, dynamic> data = json.decode(response.body);
+          return data;
+        }else{
+          return {'dailyCalories': 2.0};
+        }
+      }else{
+        return {'dailyCalories': 2.0};
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
 
   Future<List<Map<String, dynamic>>?> getUserTodayMeal() async {
     final token = await getToken();
@@ -518,11 +571,85 @@ class ApiService {
           'createdDate': DateFormat('yyyy-MM-dd').format(createdDate),
         }),
       );
-      print(response.body);
       if(response.statusCode != 202){
         throw Exception('Error');
       }
     }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> adminPostWorkout(String title, String description, String type, String startDate, String startTime) async{
+    final token = await getToken();
+    final data = {
+      'title': title,
+      'description': description,
+      'type': type,
+      'startDate': startDate,
+      'startTime': startTime
+    };
+    if (token != null) {
+      final response = await http.post(
+          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program'),
+          headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${token.jwtToken}'
+          },
+          body: json.encode(data));
+      if(response.statusCode != 202){
+        throw Exception('Cannot add training program');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> adminUpdateWorkout(int id, String title, String description, String type, String startDate, String startTime) async{
+    final token = await getToken();
+    final data = {
+      'id': id,
+      'title': title,
+      'description': description,
+      'type': type,
+      'startDate': startDate,
+      'startTime': startTime
+    };
+    if (token != null) {
+      final response = await http.put(
+          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${token.jwtToken}'
+          },
+          body: json.encode(data));
+      if(response.statusCode != 202){
+        throw Exception('Cannot edit training program');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<Map<String, dynamic>> adminGetAllTrainingProgram(int pageNumber,
+      String type, [String queryParams = '']) async {
+    final token = await getToken();
+
+    if (token != null) {
+      String programType = type.toLowerCase();
+      final response = await http.get(
+        Uri.parse(
+            'http://10.0.2.2:8080/api/v1/admin/training-program/$programType?page=$pageNumber$queryParams'),
+        headers: {
+          'Authorization': 'Bearer ${token.jwtToken}'
+        },
+      );
+      if (response.statusCode == 202) {
+        final responseData = json.decode(response.body);
+        return responseData;
+      } else {
+        throw Exception('Failed to load programs');
+      }
+    } else {
       throw Exception('Token not found');
     }
   }

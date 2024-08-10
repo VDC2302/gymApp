@@ -1,13 +1,15 @@
-import 'package:gymApp/src/features/onboarding/presentation/screens/widgets/custom_tile.dart';
-import 'package:gymApp/src/features/onboarding/presentation/screens/widgets/top_container.dart';
-import 'package:gymApp/src/features/onboarding/presentation/view_models/onboarding_viewmodel.dart';
-import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gymApp/src/features/onboarding/presentation/view_models/onboarding_viewmodel.dart';
+import 'package:gymApp/src/shared/shared.dart';
+
+import '../widgets/custom_tile.dart';
+import '../widgets/top_container.dart';
 
 class SecondView extends ConsumerWidget {
   final int currentPage;
   final PageController pageController;
+
   const SecondView({
     super.key,
     required this.currentPage,
@@ -15,7 +17,7 @@ class SecondView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final activityFrequencies = ref.watch(onboardingProvider).activityFrequencies;
     final activityFrequency = ref.watch(onboardingProvider).activityFrequency;
 
@@ -30,7 +32,7 @@ class SecondView extends ConsumerWidget {
           padding: EdgeInsets.symmetric(horizontal: 30.dx),
           children: List.generate(
             activityFrequencies.length,
-            (index) => CustomTile(
+                (index) => CustomTile(
               text: activityFrequencies[index],
               isSelected: activityFrequency == activityFrequencies[index],
               onTap: () {

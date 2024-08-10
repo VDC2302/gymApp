@@ -1,18 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:get/get_connect/http/src/exceptions/exceptions.dart';
 import 'package:gymApp/src/features/navigation/app_navigator.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
+import '../view_models/onboarding_viewmodel.dart';
 import 'views/views.dart';
 
-class OnboardingScreen extends HookWidget {
+class OnboardingScreen extends HookConsumerWidget {
   const OnboardingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final currentPage = useState<int>(0);
     final pageController = usePageController(initialPage: currentPage.value);
@@ -68,26 +73,6 @@ class OnboardingScreen extends HookWidget {
                       currentPage: currentPage.value,
                       pageController: pageController,
                     ),
-                    // ThirdView(
-                    //   currentPage: currentPage.value,
-                    //   pageController: pageController,
-                    // ),
-                    // FourthView(
-                    //   currentPage: currentPage.value,
-                    //   pageController: pageController,
-                    // ),
-                    // FifthView(
-                    //   currentPage: currentPage.value,
-                    //   pageController: pageController,
-                    // ),
-                    // SixthView(
-                    //   currentPage: currentPage.value,
-                    //   pageController: pageController,
-                    // ),
-                    // SeventhView(
-                    //   currentPage: currentPage.value,
-                    //   pageController: pageController,
-                    // ),
                   ],
                 ),
               ),
@@ -96,13 +81,47 @@ class OnboardingScreen extends HookWidget {
                     .copyWith(bottom: 35.dy),
                 child: AppButton(
                   title: 'Continue',
-                  onTap: () {
+                  onTap: () async {
                     if (currentPage.value == 1) {
-                      AppNavigator.pushNamed(HomeRoutes.main);
+                      // Attempt to put onboarding data
+                      final onboardingViewModel = ref.read(onboardingProvider);
+                      ApiService apiService = ApiService();
+
+                      try {
+                        await apiService.postUserTarget(
+                          height: double.tryParse(onboardingViewModel.userHeight) ?? 0.0,
+                          weight: double.tryParse(onboardingViewModel.userWeight) ?? 0.0,
+                          activityFrequency: onboardingViewModel.activityFrequency,
+                        );
+                        // Navigate to Home if successful
+                        Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
+                      } catch (e) {
+                        // Handle errors, such as displaying an error dialog
+                        if (e is UnauthorizedException) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Access Denied'),
+                              content: const Text('You are not authorized to proceed. Please check your inputs.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('An error occurred. Please try again later.')),
+                          );
+                        }
+                      }
                     } else {
                       pageController.nextPage(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.linear);
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.linear,
+                      );
                     }
                   },
                 ),

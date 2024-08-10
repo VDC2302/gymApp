@@ -1,12 +1,14 @@
-import 'package:gymApp/src/features/onboarding/presentation/screens/widgets/top_container.dart';
-import 'package:gymApp/src/features/onboarding/presentation/view_models/onboarding_viewmodel.dart';
-import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gymApp/src/features/onboarding/presentation/view_models/onboarding_viewmodel.dart';
+import 'package:gymApp/src/shared/shared.dart';
+
+import '../widgets/top_container.dart';
 
 class FirstView extends ConsumerWidget {
   final int currentPage;
   final PageController pageController;
+
   const FirstView({
     super.key,
     required this.currentPage,
@@ -14,7 +16,7 @@ class FirstView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final weightController = TextEditingController();
     final heightController = TextEditingController();
 
@@ -28,11 +30,17 @@ class FirstView extends ConsumerWidget {
         _buildInputField(
           controller: weightController,
           label: 'Weight (kg)',
+          onChanged: (value) {
+            ref.read(onboardingProvider.notifier).userWeight = value;
+          },
         ),
         YBox(30.dy),
         _buildInputField(
           controller: heightController,
           label: 'Height (cm)',
+          onChanged: (value) {
+            ref.read(onboardingProvider.notifier).userHeight = value;
+          },
         ),
       ],
     );
@@ -41,33 +49,37 @@ class FirstView extends ConsumerWidget {
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
+    required Function(String) onChanged,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, // Align label to the left
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label, // Display the label text
+          label,
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: Colors.black, // Set label color to black
+            color: Colors.black,
           ),
         ),
-        YBox(10.dy), // Add some space between the label and the input field
+        YBox(10.dy),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.dx),
           decoration: BoxDecoration(
-            color: appColors.white, // White background color
+            color: Colors.white, // Ensure this is white
             borderRadius: BorderRadius.circular(11),
             border: Border.all(color: appColors.grey),
           ),
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
+            onChanged: onChanged,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Enter your $label',
-              hintStyle: TextStyle(color: appColors.grey), // Hint text style
+              hintStyle: TextStyle(color: appColors.grey),
+              fillColor: Colors.white, // Add this line if needed
+              filled: true, // Ensure this is set to true
             ),
           ),
         ),

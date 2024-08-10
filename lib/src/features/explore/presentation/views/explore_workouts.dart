@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
+import 'package:intl/intl.dart';
+
+import 'lesson_view.dart';
 
 class ExploreWorkouts extends StatefulWidget {
   const ExploreWorkouts({super.key});
@@ -20,6 +24,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   bool isLoadingMore = false;
   bool isSearching = false;
   bool hasMore = true;
+  bool isAdmin = false;
   int currentPage = 0;
   final int pageSize = 5;
   String selectedType = 'ONLINE';
@@ -30,6 +35,18 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     super.initState();
     _getWorkouts();
     _searchController.addListener(_filterWorkouts);
+    _checkIfAdmin();
+  }
+
+  Future<void> _checkIfAdmin() async {
+    try {
+      final result = await apiService.checkTarget();
+      setState(() {
+        isAdmin = result == 'admin';
+      });
+    } catch (e) {
+      print('Failed to check admin status: $e');
+    }
   }
 
   Future<void> _getWorkouts({String? searchQuery}) async {
@@ -42,7 +59,9 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
         await Future.delayed(const Duration(milliseconds: 500));
 
         final queryParams = searchQuery != null ? '?title.contains=$searchQuery' : '';
-        final response = await apiService.getAllTrainingProgram(currentPage, selectedType, queryParams);
+        final response = isAdmin
+            ? await apiService.adminGetAllTrainingProgram(currentPage, selectedType, queryParams)
+            : await apiService.getAllTrainingProgram(currentPage, selectedType, queryParams);
         setState(() {
           workouts.addAll(List<Map<String, dynamic>>.from(response['content']));
           _filterWorkouts(); // Filter the workouts based on the search query
@@ -64,13 +83,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   void _onTypeSelected(String type) {
     setState(() {
       selectedType = type;
-      workouts.clear(); // Clear current workouts
-      filteredWorkouts.clear(); // Clear filtered workouts
-      currentPage = 0; // Reset page
-      hasMore = true; // Reset hasMore
+      workouts.clear();
+      filteredWorkouts.clear();
+      currentPage = 0;
+      hasMore = true;
       isSearching = false;
       _searchController.clear();
-      _getWorkouts(); // Fetch new data
+      _getWorkouts();
     });
   }
 
@@ -94,6 +113,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appColors.lightGrey,
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+        onPressed: () => _showAddWorkoutDialog(context),
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.add, color: Colors.white),
+      )
+          : null, // Hide the button if not an admin
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : NotificationListener<ScrollNotification>(
@@ -142,8 +168,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildtypeButton('Online', 'ONLINE'),
-                    _buildtypeButton('Offline', 'OFFLINE'),
+                    _buildTypeButton('Online', 'ONLINE'),
+                    _buildTypeButton('Offline', 'OFFLINE'),
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -156,18 +182,20 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: isSearching ? Colors.black : Colors.white,
+                        backgroundColor: isSearching ? Colors.black : const Color(0xffE5E5E5),
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(15.0),
                       ),
-                      child: Text(
-                        isSearching ? 'Cancel' : 'Search',
+                      child: isSearching
+                          ? Text(
+                        'Cancel',
                         style: GoogleFonts.inter(
-                          color: isSearching ? Colors.white : Colors.black,
+                          color: Colors.white,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w500,
                         ),
-                      ),
+                      )
+                          : const Icon(CupertinoIcons.search, color: Colors.black,),
                     ),
                   ],
                 ),
@@ -186,7 +214,14 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                       final workout = filteredWorkouts[index];
                       return GestureDetector(
                         onTap: () {
-                          _showWorkoutDetails(workout['title'], workout['type'], workout['description'], workout['startDate'], workout['startTime'], workout['id']);
+                          _showWorkoutDetails(
+                              workout['title'],
+                              workout['type'],
+                              workout['description'],
+                              workout['startDate'],
+                              workout['startTime'],
+                              workout['id']
+                          );
                         },
                         child: Column(
                           children: [
@@ -227,7 +262,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     );
   }
 
-  Widget _buildtypeButton(String text, String type) {
+  Widget _buildTypeButton(String text, String type) {
     bool isSelected = selectedType == type;
     return ElevatedButton(
       onPressed: () => _onTypeSelected(type),
@@ -319,101 +354,494 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       ),
     );
   }
-  void _showWorkoutDetails(String? title,
+
+  void _showWorkoutDetails(
+      String? title,
       String? type,
       String? description,
       String? startDate,
       String? startTime,
       int id) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            title ?? '',
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
+    if (isAdmin) {
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return EditWorkoutForm(
+            workout: {
+              'title': title,
+              'type': type,
+              'description': description,
+              'startDate': startDate,
+              'startTime': startTime,
+              'id': id,
+            },
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              title ?? '',
+              style: GoogleFonts.inter(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Type: $type',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w500,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Type: $type',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 10.dy),
+                Text(
+                  type == 'OFFLINE' ? 'Start Date: $startDate' : '',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 10.dy),
+                Text(
+                  'Start Time: $startTime',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 10.dy),
+                Text(
+                  'Description: $description',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await apiService.userRegisterProgram(id);
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Successfully registered for the program!')),
+                    );
+                  } catch (e) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to register: $e')),
+                    );
+                  }
+                },
+                child: Text(
+                  'Register',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue,
+                  ),
                 ),
               ),
-              SizedBox(height: 10.dy),
-              Text(
-                'Start Date: $startDate',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 10.dy),
-              Text(
-                'Start Time: $startTime',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 10.dy),
-              Text(
-                'Description: $description',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w500,
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red,
+                  ),
                 ),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                try {
-                  await apiService.userRegisterProgram(id);
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Successfully registered for the program!')),
-                  );
-                } catch (e) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to register: $e')),
-                  );
-                }
-              },
-              child: Text(
-                'Register',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
-                ),
-              ),
-            ),
-          ],
-        );
+          );
+        },
+      );
+    }
+  }
+
+  void _showAddWorkoutDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return AddWorkoutForm();
       },
+    );
+  }
+}
+
+class AddWorkoutForm extends StatefulWidget {
+  @override
+  _AddWorkoutFormState createState() => _AddWorkoutFormState();
+}
+
+class _AddWorkoutFormState extends State<AddWorkoutForm> {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  String selectedType = 'ONLINE';
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController startTimeController = TextEditingController();
+
+  final ApiService apiService = ApiService();
+
+  bool get isOnline => selectedType == 'ONLINE';
+
+  Future<void> _submitWorkout() async {
+    try {
+      await apiService.adminPostWorkout(
+        titleController.text,
+        descriptionController.text,
+        selectedType,
+        startDateController.text,
+        startTimeController.text,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Workout added successfully!')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to add workout')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextField(
+            controller: titleController,
+            decoration: const InputDecoration(
+              labelText: 'Title',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+            style: TextStyle(color: Colors.black),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: descriptionController,
+            decoration: const InputDecoration(
+              labelText: 'Description',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+            style: const TextStyle(color: Colors.black),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String>(
+            value: selectedType,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedType = newValue!;
+              });
+            },
+            items: <String>['ONLINE', 'OFFLINE']
+                .map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            decoration: const InputDecoration(
+              labelText: 'Type',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: startDateController,
+            decoration: InputDecoration(
+              labelText: 'Start Date',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+              enabled: !isOnline, // Disable the field if online
+              fillColor: isOnline ? Colors.grey[300] : null, // Grey out the field if online
+              filled: isOnline,
+            ),
+            onTap: isOnline
+                ? null // Prevent interaction if online
+                : () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2101),
+              );
+              if (pickedDate != null) {
+                String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                startDateController.text = formattedDate;
+              }
+            },
+            readOnly: isOnline, // Make the field read-only if online
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: startTimeController,
+            decoration: InputDecoration(
+              labelText: 'Start Time',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+              enabled: !isOnline, // Disable the field if online
+              fillColor: isOnline ? Colors.grey[300] : null, // Grey out the field if online
+              filled: isOnline,
+            ),
+            onTap: isOnline
+                ? null // Prevent interaction if online
+                : () async {
+              TimeOfDay? pickedTime = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.now(),
+              );
+              if (pickedTime != null) {
+                final now = DateTime.now();
+                final formattedTime = DateFormat('HH:mm:ss').format(
+                  DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute),
+                );
+                startTimeController.text = formattedTime;
+              }
+            },
+            readOnly: isOnline, // Make the field read-only if online
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: _submitWorkout,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+                ),
+                child: const Text('Add Workout'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the form or dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EditWorkoutForm extends StatefulWidget {
+  final Map<String, dynamic> workout;
+
+  const EditWorkoutForm({required this.workout, Key? key}) : super(key: key);
+
+  @override
+  _EditWorkoutFormState createState() => _EditWorkoutFormState();
+}
+
+class _EditWorkoutFormState extends State<EditWorkoutForm> {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  String selectedType = 'ONLINE';
+  final TextEditingController startDateController = TextEditingController();
+  final TextEditingController startTimeController = TextEditingController();
+  final ApiService apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the controllers with the current workout details
+    final workout = widget.workout;
+    titleController.text = workout['title'] ?? '';
+    descriptionController.text = workout['description'] ?? '';
+    selectedType = workout['type'] ?? 'ONLINE';
+    startDateController.text = workout['startDate'] ?? '';
+    startTimeController.text = workout['startTime'] ?? '';
+  }
+
+  bool get isOnline => selectedType == 'ONLINE';
+
+  Future<void> _submitWorkout() async {
+    try {
+      await apiService.adminUpdateWorkout(
+        widget.workout['id'], // Pass the workout ID for updating
+        titleController.text,
+        descriptionController.text,
+        selectedType,
+        startDateController.text,
+        startTimeController.text,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Workout updated successfully!')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update workout')),
+      );
+    }
+  }
+
+  void _navigateToLessonView() {
+    print('');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LessonView(workout: widget.workout),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextField(
+            controller: titleController,
+            decoration: const InputDecoration(
+              labelText: 'Title',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+            style: TextStyle(color: Colors.black),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: descriptionController,
+            decoration: const InputDecoration(
+              labelText: 'Description',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+            style: const TextStyle(color: Colors.black),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String>(
+            value: selectedType,
+            onChanged: (String? newValue) {
+              setState(() {
+                selectedType = newValue!;
+              });
+            },
+            items: <String>['ONLINE', 'OFFLINE']
+                .map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            decoration: const InputDecoration(
+              labelText: 'Type',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: startDateController,
+            decoration: InputDecoration(
+              labelText: 'Start Date',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+              enabled: !isOnline,
+              fillColor: isOnline ? Colors.grey[300] : null,
+              filled: isOnline,
+            ),
+            onTap: isOnline
+                ? null
+                : () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2101),
+              );
+              if (pickedDate != null) {
+                String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                startDateController.text = formattedDate;
+              }
+            },
+            readOnly: isOnline,
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: startTimeController,
+            decoration: InputDecoration(
+              labelText: 'Start Time',
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(),
+              enabled: !isOnline,
+              fillColor: isOnline ? Colors.grey[300] : null,
+              filled: isOnline,
+            ),
+            onTap: isOnline
+                ? null
+                : () async {
+              TimeOfDay? pickedTime = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.now(),
+              );
+              if (pickedTime != null) {
+                final now = DateTime.now();
+                final formattedTime = DateFormat('HH:mm:ss').format(
+                  DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute),
+                );
+                startTimeController.text = formattedTime;
+              }
+            },
+            readOnly: isOnline,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: _submitWorkout,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.green,
+                ),
+                child: const Text('Update'),
+              ),
+              ElevatedButton(
+                onPressed: _navigateToLessonView,
+                child: Text('View Lesson'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the form or dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.red,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

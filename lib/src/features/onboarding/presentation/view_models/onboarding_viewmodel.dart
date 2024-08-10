@@ -1,37 +1,43 @@
-import 'package:gymApp/src/shared/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 
 final onboardingProvider = ChangeNotifierProvider((ref) {
   return OnboardingViewModel();
 });
 
 class OnboardingViewModel extends ChangeNotifier {
-  Gender gender = Gender.male;
   List<String> activityFrequencies = [
     'SEDENTARY',
     'LIGHTLY',
     'MODERATELY',
     'VERY',
-    'SUPER'];
-//?----------------------------------------------------------------
+    'SUPER',
+  ];
   String activityFrequency = '';
-  String weightRange = '';
-  String heightRange = '';
-  String fitnessLevel = '';
-  List<String> selectedWorkoutGoals = [];
+  String userWeight = '';
+  String userHeight = '';
 
-  void selectGender(bool isMale) {
-    if (isMale) {
-      gender = Gender.male;
-    } else {
-      gender = Gender.female;
-    }
-    notifyListeners();
-  }
+  final ApiService _apiService = ApiService();
 
   void selectActivityFreq(String selectedActivityFreq) {
     activityFrequency = selectedActivityFreq;
     notifyListeners();
   }
+
+  // Future<void> submitOnboardingData() async {
+  //   final weight = double.parse(userWeight) ?? 0.0; // Ensure weight is valid
+  //   final height = double.parse(userHeight) ?? 0.0; // Ensure height is valid
+  //   print('height: $height\nweight: $weight\nactivity: $activityFrequency');
+  //
+  //   try {
+  //     await _apiService.postUserTarget(
+  //       weight: weight,
+  //       height: height,
+  //       activityFrequency: activityFrequency,
+  //     );
+  //   } catch (e) {
+  //     print('Error submitting onboarding data: $e');
+  //   }
+  // }
 }

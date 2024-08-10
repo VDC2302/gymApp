@@ -37,7 +37,7 @@ class _NutritionState extends State<Nutrition> {
     fetchData();
   }
 
-  void fetchData() {
+  Future<void> fetchData() async {
     setState(() {
       isLoading = true;
     });
@@ -75,10 +75,10 @@ class _NutritionState extends State<Nutrition> {
           .getThisWeekNutrition();
 
       return {
-        NutrientType.calories: thisWeekData['weeklyCalories'] ?? 0.0,
-        NutrientType.protein: thisWeekData['weeklyProtein'] ?? 0.0,
-        NutrientType.fat: thisWeekData['weeklyFat'] ?? 0.0,
-        NutrientType.carbohydrates: thisWeekData['weeklyCarbohydrates'] ?? 0.0,
+        NutrientType.calories: thisWeekData['calories'] ?? 0.0,
+        NutrientType.protein: thisWeekData['protein'] ?? 0.0,
+        NutrientType.fat: thisWeekData['fat'] ?? 0.0,
+        NutrientType.carbohydrates: thisWeekData['carbohydrates'] ?? 0.0,
       };
     }
 
@@ -99,191 +99,193 @@ class _NutritionState extends State<Nutrition> {
     });
   }
 
+  Future<void> _handleRefresh() async {
+    await fetchData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appColors.lightGrey,
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchData, // Call the method to refresh the data
-        child: const Icon(Icons.refresh),
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<Map<MealType, double>>(
-        future: _todayMealDataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            Map<MealType, double> todayCalories = snapshot.data ?? {};
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : FutureBuilder<Map<MealType, double>>(
+          future: _todayMealDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              Map<MealType, double> todayCalories = snapshot.data ?? {};
 
-            return FutureBuilder<Map<NutrientType, double>>(
-              future: _thisWeekNutrientFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else {
-                  Map<NutrientType, double> thisWeekNutrients =
-                      snapshot.data ?? {};
+              return FutureBuilder<Map<NutrientType, double>>(
+                future: _thisWeekNutrientFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                    Map<NutrientType, double> thisWeekNutrients =
+                        snapshot.data ?? {};
 
-
-                  return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15.dx),
-                    child: Column(
-                      children: [
-                        SparkleContainer(
-                          height: 170.dy,
-                          isBgWhite: true,
-                          padding: EdgeInsets.all(10.dx),
-                          decoration: BoxDecoration(
-                            color: appColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 25.dy),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceBetween,
-                                  children: [
-                                    Text.rich(
-                                      TextSpan(
-                                        text: 'NUTRIENT',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 20.sp,
-                                          fontWeight: FontWeight.w600,
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.dx),
+                        child: Column(
+                          children: [
+                            SparkleContainer(
+                              height: 170.dy,
+                              isBgWhite: true,
+                              padding: EdgeInsets.all(10.dx),
+                              decoration: BoxDecoration(
+                                color: appColors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 25.dy),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .spaceBetween,
+                                      children: [
+                                        Text.rich(
+                                          TextSpan(
+                                            text: 'NUTRIENT',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 20.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        SvgAsset(assetName: nutrientCycle)
+                                      ],
                                     ),
-                                    SvgAsset(assetName: nutrientCycle)
-                                  ],
-                                ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 5.dx),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _nutrientCycleRow(NutrientType.calories,
+                                            thisWeekNutrients[NutrientType
+                                                .calories] ?? 0.0),
+                                        YBox(6.dy),
+                                        _nutrientCycleRow(NutrientType.protein,
+                                            thisWeekNutrients[NutrientType
+                                                .protein] ?? 0.0),
+                                        YBox(6.dy),
+                                        _nutrientCycleRow(NutrientType.fat,
+                                            thisWeekNutrients[NutrientType.fat] ??
+                                                0.0),
+                                        YBox(6.dy),
+                                        _nutrientCycleRow(
+                                            NutrientType.carbohydrates,
+                                            thisWeekNutrients[NutrientType
+                                                .carbohydrates] ?? 0.0),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 5.dx),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _nutrientCycleRow(NutrientType.calories,
-                                        thisWeekNutrients[NutrientType
-                                            .calories] ?? 0.0),
-                                    YBox(6.dy),
-                                    _nutrientCycleRow(NutrientType.protein,
-                                        thisWeekNutrients[NutrientType
-                                            .protein] ?? 0.0),
-                                    YBox(6.dy),
-                                    _nutrientCycleRow(NutrientType.fat,
-                                        thisWeekNutrients[NutrientType.fat] ??
-                                            0.0),
-                                    YBox(6.dy),
-                                    _nutrientCycleRow(
-                                        NutrientType.carbohydrates,
-                                        thisWeekNutrients[NutrientType
-                                            .carbohydrates] ?? 0.0),
-                                  ],
-                                ),
+                            ),
+                            _buildHeaderText('Today Meals'),
+                            SparkleContainer(
+                              height: 75.dy,
+                              isBgWhite: true,
+                              decoration: BoxDecoration(
+                                color: appColors.white,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ],
-                          ),
+                              child: _todayMealsContent(
+                                MealType.breakfast,
+                                todayCalories[MealType.breakfast] ?? 0.0,
+                              ),
+                            ),
+                            YBox(15.dy),
+                            SparkleContainer(
+                              height: 75.dy,
+                              decoration: BoxDecoration(
+                                color: appColors.green,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _todayMealsContent(
+                                MealType.lunch,
+                                todayCalories[MealType.lunch] ?? 0.0,
+                              ),
+                            ),
+                            YBox(15.dy),
+                            SparkleContainer(
+                              height: 75.dy,
+                              decoration: BoxDecoration(
+                                color: appColors.grey33,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _todayMealsContent(
+                                MealType.afternoon,
+                                todayCalories[MealType.afternoon] ?? 0.0,
+                              ),
+                            ),
+                            YBox(15.dy),
+                            SparkleContainer(
+                              height: 75.dy,
+                              decoration: BoxDecoration(
+                                color: appColors.black,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _todayMealsContent(
+                                MealType.dinner,
+                                todayCalories[MealType.dinner] ?? 0.0,
+                              ),
+                            ),
+                            _buildHeaderText('Healthy recipes'),
+                            SparkleContainer(
+                              height: 148.dy,
+                              isBgWhite: true,
+                              decoration: BoxDecoration(
+                                color: appColors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _healthRecipeContent(HealthyRecipe.first),
+                            ),
+                            YBox(15.dy),
+                            SparkleContainer(
+                              height: 148.dy,
+                              isBgWhite: true,
+                              decoration: BoxDecoration(
+                                color: appColors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _healthRecipeContent(HealthyRecipe.second),
+                            ),
+                            YBox(15.dy),
+                            SparkleContainer(
+                              height: 148.dy,
+                              isBgWhite: true,
+                              decoration: BoxDecoration(
+                                color: appColors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: _healthRecipeContent(HealthyRecipe.third),
+                            ),
+                            YBox(30.dy),
+                          ],
                         ),
-                        _buildHeaderText('Today Meals'),
-                        SparkleContainer(
-                          height: 75.dy,
-                          isBgWhite: true,
-                          decoration: BoxDecoration(
-                            color: appColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _todayMealsContent(
-                            MealType.breakfast,
-                            todayCalories[MealType.breakfast] ?? 0.0,
-                          ),
-                        ),
-                        YBox(15.dy),
-                        SparkleContainer(
-                          height: 75.dy,
-                          decoration: BoxDecoration(
-                            color: appColors.green,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _todayMealsContent(
-                            MealType.lunch,
-                            todayCalories[MealType.lunch] ?? 0.0,
-                          ),
-                        ),
-                        YBox(15.dy),
-                        SparkleContainer(
-                          height: 75.dy,
-                          decoration: BoxDecoration(
-                            color: appColors.grey33,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _todayMealsContent(
-                            MealType.afternoon,
-                            todayCalories[MealType.afternoon] ?? 0.0,
-                          ),
-                        ),
-                        YBox(15.dy),
-                        SparkleContainer(
-                          height: 75.dy,
-                          decoration: BoxDecoration(
-                            color: appColors.black,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _todayMealsContent(
-                            MealType.dinner,
-                            todayCalories[MealType.dinner] ?? 0.0,
-                          ),
-                        ),
-                        _buildHeaderText('Healthy recipes'),
-                        SparkleContainer(
-                          height: 148.dy,
-                          isBgWhite: true,
-                          decoration: BoxDecoration(
-                            color: appColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _healthRecipeContent(HealthyRecipe.first),
-                        ),
-                        YBox(15.dy),
-                        SparkleContainer(
-                          height: 148.dy,
-                          isBgWhite: true,
-                          decoration: BoxDecoration(
-                            color: appColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _healthRecipeContent(HealthyRecipe.second),
-                        ),
-                        YBox(15.dy),
-                        SparkleContainer(
-                          height: 148.dy,
-                          isBgWhite: true,
-                          decoration: BoxDecoration(
-                            color: appColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: _healthRecipeContent(HealthyRecipe.third),
-                        ),
-                        YBox(30.dy),
-                      ],
-                    ),
-                  ),
-                  );
-                }
+                      ),
+                    );
+                  }
                 },
-            );
-          }
+              );
+            }
           },
+        ),
       ),
     );
   }

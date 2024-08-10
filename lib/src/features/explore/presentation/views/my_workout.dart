@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:gymApp/src/features/explore/presentation/views/lesson_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -156,23 +157,25 @@ class _MyWorkoutState extends State<MyWorkout>{
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: isSearching ? Colors.black : Colors.white,
+                        backgroundColor: isSearching ? Colors.black : const Color(0xffE5E5E5),
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(15.0),
                       ),
-                      child: Text(
-                        isSearching ? 'Cancel' : 'Search',
+                      child: isSearching
+                          ? Text(
+                        'Cancel',
                         style: GoogleFonts.inter(
-                          color: isSearching ? Colors.white : Colors.black,
+                          color: Colors.white,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w500,
                         ),
-                      ),
+                      )
+                          : const Icon(CupertinoIcons.search, color: Colors.black,),
                     ),
                   ],
                 ),
                 if (filteredWorkouts.isEmpty && !isLoading)
-                  const Center(child: Text('No workouts available'))
+                  const Center(child: Text('No registered workouts'))
                 else
                   ListView.builder(
                     shrinkWrap: true,

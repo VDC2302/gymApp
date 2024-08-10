@@ -151,7 +151,7 @@ class ExploreView extends HookWidget {
                   },
                   child: isLastPage
                       ? SvgAsset(assetName: addIcon, color: Colors.black)
-                      : const Icon(CupertinoIcons.search),
+                      : const Icon(CupertinoIcons.bell),
                 ),
               ],
             ),

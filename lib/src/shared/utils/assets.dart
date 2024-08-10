@@ -69,6 +69,7 @@ final String foodIcon = 'food-icon'.svg;
 final String addIcon = 'addIcon'.svg;
 final String doublePlay = 'double-play'.svg;
 final String nrcIcon = 'nrc'.svg;
+final String bigFoodIcon = 'food'.svg;
 
 //? PNGS
 final String sparkleEffectSmall = 'sparkle-effect-small'.png;

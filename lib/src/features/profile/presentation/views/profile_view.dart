@@ -108,7 +108,15 @@ class ProfileView extends HookWidget {
     );
   }
 
-  Widget _buildProfileDetails(Map<String, dynamic> data) {
+  Widget _buildProfileDetails(Map<String, dynamic>? data) {
+    // Safely access data with default values for null
+    final firstName = data?['firstName'] ?? 'Admin';
+    final lastName = data?['lastName'] ?? 'N/A';
+    final gender = data?['gender'] ?? 'N/A';
+    final birthYear = data?['birthYear'] ?? 'N/A';
+    final height = data?['height'] ?? 'N/A';
+    final weight = data?['weight'] ?? 'N/A';
+
     return Container(
       padding: EdgeInsets.all(15.dx),
       width: double.infinity,
@@ -120,7 +128,7 @@ class ProfileView extends HookWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'First Name: ${data['firstName']}',
+            'First Name: $firstName',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -131,7 +139,7 @@ class ProfileView extends HookWidget {
           Divider(color: appColors.grey.withOpacity(0.3)),
           SizedBox(height: 5.dy), // Add spacing
           Text(
-            'Last Name:  ${data['lastName']}',
+            'Last Name:  $lastName',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -142,18 +150,7 @@ class ProfileView extends HookWidget {
           Divider(color: appColors.grey.withOpacity(0.3)),
           SizedBox(height: 5.dy), // Add spacing
           Text(
-            'Gender: ${data['gender']}',
-            style: GoogleFonts.lato(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: appColors.grey33,
-            ),
-          ),
-          SizedBox(height: 5.dy),
-          Divider(color: appColors.grey.withOpacity(0.3)),
-          SizedBox(height: 5.dy), // Add spacing
-          Text(
-            'Birth Year: ${data['birthYear']}',
+            'Gender: $gender',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -164,7 +161,18 @@ class ProfileView extends HookWidget {
           Divider(color: appColors.grey.withOpacity(0.3)),
           SizedBox(height: 5.dy), // Add spacing
           Text(
-            'Height: ${data['height']} cm \t\t\t\t\t Weight : ${data['weight']}',
+            'Birth Year: $birthYear',
+            style: GoogleFonts.lato(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+              color: appColors.grey33,
+            ),
+          ),
+          SizedBox(height: 5.dy),
+          Divider(color: appColors.grey.withOpacity(0.3)),
+          SizedBox(height: 5.dy), // Add spacing
+          Text(
+            'Height: $height cm \t\t\t\t\t Weight : $weight',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -179,25 +187,52 @@ class ProfileView extends HookWidget {
   Widget _buildLogoutButton(BuildContext context) {
     return Container(
       margin: EdgeInsets.all(20.dx),
-      child: ElevatedButton(
-        onPressed: () => _logout(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: appColors.yellow, // Set the button color
-          padding: EdgeInsets.symmetric(vertical: 15.dy, horizontal: 30.dx),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            onPressed: () => _editTarget(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appColors.yellow, // Set a different button color
+              padding: EdgeInsets.symmetric(vertical: 15.dy, horizontal: 30.dx),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text(
+              'Edit',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: appColors.white,
+              ),
+            ),
           ),
-        ),
-        child: Text(
-          'Logout',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: appColors.white,
+          ElevatedButton(
+            onPressed: () => _logout(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appColors.yellow, // Set the button color
+              padding: EdgeInsets.symmetric(vertical: 15.dy, horizontal: 30.dx),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text(
+              'Logout',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: appColors.white,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  void _editTarget(BuildContext context) {
+    Navigator.pushNamed(context, AuthRoutes.onboarding); // Replace with your actual route name
   }
 
   void _logout(BuildContext context) {

@@ -61,18 +61,6 @@ class _NutritionFormState extends State<NutritionForm> {
       try {
         ApiService apiService = ApiService();
         await apiService.postUserTodayMeals(requestData);
-        // Nutrition nutrition = const Nutrition();
-        // final state = nutrition.createState();
-        // state.fetchData();
-        // Nutrition(
-        //   onFetchData: () {
-        //     final state = const Nutrition(key: PageStorageKey('Nutrition')).createState();
-        //     state.fetchData();
-        //   },
-        // );
-        Nutrition nutrition = const Nutrition();
-        final state = const Nutrition().createState();
-        state.fetchData();
         Navigator.pop(context, requestData);
       } catch (error) {
         // Handle errors
@@ -96,6 +84,7 @@ class _NutritionFormState extends State<NutritionForm> {
           key: _formKey,
           child: ListView(
             children: [
+              // Date and Time Fields
               TextFormField(
                 controller: _dateController,
                 readOnly: true,
@@ -125,10 +114,9 @@ class _NutritionFormState extends State<NutritionForm> {
               ),
               TextFormField(
                 controller: _timeController,
-                readOnly: true,
                 decoration: const InputDecoration(
-                  labelText: 'Time',
-                  labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)
+                    labelText: 'Time',
+                    labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -156,80 +144,86 @@ class _NutritionFormState extends State<NutritionForm> {
                   }
                 },
               ),
-              ..._foodEntries.map((entry) {
-                int index = _foodEntries.indexOf(entry);
-                return Column(
-                  key: UniqueKey(),
-                  children: [
-                    TextFormField(
-                      controller: entry["foodNameController"],
-                      decoration: InputDecoration(
-                          labelText: 'Food Name',
-                          labelStyle: TextStyle(color: appColors.black, fontWeight: FontWeight.w700)),
-                      onSaved: (value) {
-                        entry["foodNameController"].text = value ?? '';
-                      },
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: TextFormField(
-                            controller: entry["valueController"],
-                            decoration: const InputDecoration(
-                                labelText: 'Value',
-                                labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
-                            keyboardType: TextInputType.number,
-                            onSaved: (value) {
-                              entry["valueController"].text = value ?? '0.0';
-                            },
+              // Food Entries List
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: _foodEntries.length,
+                itemBuilder: (context, index) {
+                  final entry = _foodEntries[index];
+                  return Column(
+                    key: UniqueKey(),
+                    children: [
+                      TextFormField(
+                        controller: entry["foodNameController"],
+                        decoration: InputDecoration(
+                            labelText: 'Food Name',
+                            labelStyle: TextStyle(color: appColors.black, fontWeight: FontWeight.w700)),
+                        onSaved: (value) {
+                          entry["foodNameController"].text = value ?? '';
+                        },
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: entry["valueController"],
+                              decoration: const InputDecoration(
+                                  labelText: 'Value',
+                                  labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
+                              keyboardType: TextInputType.number,
+                              onSaved: (value) {
+                                entry["valueController"].text = value ?? '0.0';
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 1),
-                        Expanded(
-                          flex: 1,
-                          child: DropdownButtonFormField<String>(
-                            value: entry["unit"],
-                            items: ["g", "ml"].map((unit) {
-                              return DropdownMenuItem<String>(
-                                value: unit,
-                                child: Center(
-                                  child: Text(unit,
-                                  textAlign: TextAlign.center,
+                          const SizedBox(width: 1),
+                          Expanded(
+                            flex: 1,
+                            child: DropdownButtonFormField<String>(
+                              value: entry["unit"],
+                              items: ["g", "ml"].map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit,
+                                  child: Center(
+                                    child: Text(unit,
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                entry["unit"] = value ?? "g";
-                              });
-                            },
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  entry["unit"] = value ?? "g";
+                                });
+                              },
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              }).toList(),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.all(10),
-                    child: IconButton(
-                      onPressed: _addFoodEntry,
-                      icon: SvgPicture.asset(addIcon, width: 30, height: 30),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(10),
+                      child: IconButton(
+                        onPressed: _addFoodEntry,
+                        icon: SvgPicture.asset(addIcon, width: 30, height: 30),
+                      ),
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
+                    ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                      ),
+                      child: const Text('Submit'),
                     ),
-                    child: const Text('Submit'),
-                  ),
-                ]
+                  ]
               ),
             ],
           ),

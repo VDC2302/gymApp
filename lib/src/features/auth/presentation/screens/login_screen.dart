@@ -35,7 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final checkTarget = await apiService.checkTarget();
 
     if (result != null && result['success'] == true) {
-      Navigator.pushReplacementNamed(context, checkTarget == true ? HomeRoutes.main : AuthRoutes.onboarding);
+      if(checkTarget != 'admin') {
+        Navigator.pushReplacementNamed(context,
+            checkTarget == 'true' ? HomeRoutes.main : AuthRoutes.onboarding);
+      }else{
+        Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
+      }
     }else{
       print(result);
       setState(() {
