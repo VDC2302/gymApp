@@ -58,13 +58,17 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       try {
         await Future.delayed(const Duration(milliseconds: 500));
 
-        final queryParams = searchQuery != null ? '?title.contains=$searchQuery' : '';
+        final queryParams = searchQuery != null
+            ? '?title.contains=$searchQuery'
+            : '';
         final response = isAdmin
-            ? await apiService.adminGetAllTrainingProgram(currentPage, selectedType, queryParams)
-            : await apiService.getAllTrainingProgram(currentPage, selectedType, queryParams);
+            ? await apiService.adminGetAllTrainingProgram(
+            currentPage, selectedType, queryParams)
+            : await apiService.getAllTrainingProgram(
+            currentPage, selectedType, queryParams);
         setState(() {
           workouts.addAll(List<Map<String, dynamic>>.from(response['content']));
-          _filterWorkouts(); // Filter the workouts based on the search query
+          _filterWorkouts();
           isLoading = false;
           isLoadingMore = false;
           currentPage++;
@@ -101,6 +105,31 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
         return title.contains(query);
       }).toList();
     });
+  }
+
+  void _showAddWorkoutDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: AddWorkoutForm(onWorkoutAdded: _refreshWorkouts),
+        );
+      },
+    );
+  }
+
+  void _refreshWorkouts() {
+    setState(() {
+      workouts.clear();
+      filteredWorkouts.clear();
+      currentPage = 0;
+      hasMore = true;
+    });
+    _getWorkouts();
   }
 
   @override
@@ -150,7 +179,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.black), // Change border color when focused
+                          borderSide: const BorderSide(color: Colors
+                              .black), // Change border color when focused
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.close),
@@ -182,7 +212,9 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: isSearching ? Colors.black : const Color(0xffE5E5E5),
+                        backgroundColor: isSearching
+                            ? Colors.black
+                            : const Color(0xffE5E5E5),
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(15.0),
                       ),
@@ -195,7 +227,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                           fontWeight: FontWeight.w500,
                         ),
                       )
-                          : const Icon(CupertinoIcons.search, color: Colors.black,),
+                          : const Icon(
+                        CupertinoIcons.search, color: Colors.black,),
                     ),
                   ],
                 ),
@@ -205,7 +238,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredWorkouts.length + (hasMore && isLoadingMore ? 1 : 0),
+                    itemCount: filteredWorkouts.length +
+                        (hasMore && isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == filteredWorkouts.length) {
                         // Show loading indicator if there are more items to load
@@ -245,7 +279,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                                 isBgWhite: index % 3 == 1,
                               ),
                             ),
-                            if (index < filteredWorkouts.length - 1) YBox(15.dy),
+                            if (index < filteredWorkouts.length - 1) YBox(
+                                15.dy),
                           ],
                         ),
                       );
@@ -311,7 +346,9 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   ),
                   children: [
                     TextSpan(
-                      text: type == 'OFFLINE' ? '$type\n$startDate\n$startTime' : '$type',
+                      text: type == 'OFFLINE'
+                          ? '$type\n$startDate\n$startTime'
+                          : '$type',
                       style: GoogleFonts.inter(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
@@ -355,8 +392,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     );
   }
 
-  void _showWorkoutDetails(
-      String? title,
+  void _showWorkoutDetails(String? title,
       String? type,
       String? description,
       String? startDate,
@@ -367,14 +403,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
         context: context,
         builder: (BuildContext context) {
           return EditWorkoutForm(
-            workout: {
-              'title': title,
-              'type': type,
-              'description': description,
-              'startDate': startDate,
-              'startTime': startTime,
-              'id': id,
-            },
+            workout: filteredWorkouts.firstWhere(
+              (workout) => workout['id'] == id), onWorkoutUpdated: _refreshWorkouts,
           );
         },
       );
@@ -434,7 +464,8 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                     await apiService.userRegisterProgram(id);
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Successfully registered for the program!')),
+                      const SnackBar(content: Text(
+                          'Successfully registered for the program!')),
                     );
                   } catch (e) {
                     Navigator.of(context).pop();
@@ -471,18 +502,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       );
     }
   }
-
-  void _showAddWorkoutDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return AddWorkoutForm();
-      },
-    );
-  }
 }
 
 class AddWorkoutForm extends StatefulWidget {
+  final VoidCallback onWorkoutAdded; // Callback function
+
+  const AddWorkoutForm({super.key, required this.onWorkoutAdded});
+
   @override
   _AddWorkoutFormState createState() => _AddWorkoutFormState();
 }
@@ -510,6 +536,7 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Workout added successfully!')),
       );
+      widget.onWorkoutAdded();
       Navigator.of(context).pop();
     } catch (e) {
       Navigator.of(context).pop();
@@ -651,8 +678,9 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
 
 class EditWorkoutForm extends StatefulWidget {
   final Map<String, dynamic> workout;
+  final VoidCallback onWorkoutUpdated;
 
-  const EditWorkoutForm({required this.workout, Key? key}) : super(key: key);
+  const EditWorkoutForm({required this.workout, super.key, required this.onWorkoutUpdated});
 
   @override
   _EditWorkoutFormState createState() => _EditWorkoutFormState();
@@ -693,29 +721,22 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Workout updated successfully!')),
       );
+      widget.onWorkoutUpdated();
       Navigator.of(context).pop();
+
     } catch (e) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update workout')),
+        const SnackBar(content: Text('Failed to update workout')),
       );
     }
   }
 
-  void _navigateToLessonView() {
-    print('');
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LessonView(workout: widget.workout),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -726,7 +747,7 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
               labelStyle: TextStyle(color: Colors.black),
               border: OutlineInputBorder(),
             ),
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Colors.black),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -764,8 +785,8 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
             controller: startDateController,
             decoration: InputDecoration(
               labelText: 'Start Date',
-              labelStyle: TextStyle(color: Colors.black),
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.black),
+              border: const OutlineInputBorder(),
               enabled: !isOnline,
               fillColor: isOnline ? Colors.grey[300] : null,
               filled: isOnline,
@@ -786,13 +807,13 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
             },
             readOnly: isOnline,
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           TextField(
             controller: startTimeController,
             decoration: InputDecoration(
               labelText: 'Start Time',
-              labelStyle: TextStyle(color: Colors.black),
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.black),
+              border: const OutlineInputBorder(),
               enabled: !isOnline,
               fillColor: isOnline ? Colors.grey[300] : null,
               filled: isOnline,
@@ -819,16 +840,30 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton(
+                onPressed: (){
+                  print(widget.workout);
+                  if (selectedType == 'ONLINE') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LessonView(workout: widget.workout), //error here
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.black,
+                ),
+                child: const Text('Lessons'),
+              ),
+              ElevatedButton(
                 onPressed: _submitWorkout,
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white, backgroundColor: Colors.green,
                 ),
                 child: const Text('Update'),
               ),
-              ElevatedButton(
-                onPressed: _navigateToLessonView,
-                child: Text('View Lesson'),
-              ),
+
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the form or dialog

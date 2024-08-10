@@ -29,7 +29,7 @@ class ProfileView extends HookWidget {
       }
       getProfile();
       return null;
-    }, []);
+    });
 
     return Scaffold(
       backgroundColor: appColors.lightGrey,
@@ -51,7 +51,14 @@ class ProfileView extends HookWidget {
                 _buildLogoutButton(context),
               ],
             )
-                : const Center(child: Text('Profile data not available')),
+                : Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildProfilePicture({}),
+                _buildProfileDetails({}),
+                _buildLogoutButton(context),
+              ],
+            )
           ),
         ],
       ),
@@ -172,7 +179,7 @@ class ProfileView extends HookWidget {
           Divider(color: appColors.grey.withOpacity(0.3)),
           SizedBox(height: 5.dy), // Add spacing
           Text(
-            'Height: $height cm \t\t\t\t\t Weight : $weight',
+            'Height: $height cm \t\t\t\t\t Weight : $weight kg',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,

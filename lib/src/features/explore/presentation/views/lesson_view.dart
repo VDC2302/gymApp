@@ -1,22 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'video_player_screen.dart';
 
-class LessonView extends StatelessWidget {
+class LessonView extends StatefulWidget {
   final Map<String, dynamic> workout;
 
   const LessonView({super.key, required this.workout});
 
   @override
+  _LessonViewState createState() => _LessonViewState();
+}
+class _LessonViewState extends State<LessonView>{
+  bool isAdmin = false;
+  ApiService apiService = ApiService();
+
+  Future<void> _checkIfAdmin() async {
+    try {
+      final result = await apiService.checkTarget();
+      setState(() {
+        isAdmin = result == 'admin';
+      });
+    } catch (e) {
+      print('Failed to check admin status: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> lessons = List<Map<String, dynamic>>.from(workout['trainingLessons']);
+    final List<Map<String, dynamic>> lessons = List<Map<String, dynamic>>.from(widget.workout['trainingLessons']);
 
     return Scaffold(
       backgroundColor: appColors.lightGrey,
       appBar: AppBar(
         title: Text(
-          workout['title'],
+          widget.workout['title'],
           style: GoogleFonts.inter(
             fontSize: 16.sp,
             fontWeight: FontWeight.w500,
@@ -64,6 +83,26 @@ class LessonView extends StatelessWidget {
           );
         },
       ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+        onPressed: () {
+          _showAddLessonDialog();
+        },
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.add, color: Colors.white),
+      )
+          : null,
+    );
+  }
+
+  void _showAddLessonDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add New Lesson')
+        );
+      },
     );
   }
 }

@@ -202,9 +202,12 @@ class ApiService {
       if (response.statusCode == 202) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         return responseData;
+      }else{
+        return null;
       }
+    }else{
+      throw Exception('Token not found');
     }
-    return null;
   }
 
   Future<void> editProfile(double weight, double height, String activity) async{
