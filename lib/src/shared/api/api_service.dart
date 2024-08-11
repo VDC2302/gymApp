@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:get/get_connect/http/src/multipart/form_data.dart';
+import 'package:get/get_connect/http/src/multipart/multipart_file.dart';
 import 'package:http/http.dart' as http;
 import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http_parser/http_parser.dart';
 
 class Token {
   final String jwtToken;
@@ -107,7 +112,6 @@ class ApiService {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
       );
-      print(response.statusCode);
       if(response.statusCode == 202){
         if(response.body.isNotEmpty){
           return json.decode(response.body).toString();
@@ -361,15 +365,20 @@ class ApiService {
     }
   }
 
-  Future<void> editTrackingValue() async{
+  Future<void> editTrackingValue(int id, String value, String trackingType,
+      String createdDate) async{
+    var data = {'id': id, 'value': value, 'trackingType': trackingType, 'createdDate': createdDate};
     final token = await getToken();
 
     if (token != null) {
       final response = await http.put(
           Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}'
-          });
+          },
+          body: json.encode(data));
+      print(response.statusCode);
       if(response.statusCode != 202){
         throw Exception('Failed to edit');
       }
@@ -478,10 +487,10 @@ class ApiService {
           Map<String, dynamic> data = json.decode(response.body);
           return data;
         }else{
-          return {'dailyCalories': 2.0};
+          return {'dailyCalories': 0.0};
         }
       }else{
-        return {'dailyCalories': 2.0};
+        return {'dailyCalories': 0.0};
       }
     }else{
       throw Exception('Token not found');
@@ -635,6 +644,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> adminGetAllTrainingProgram(int pageNumber,
       String type, [String queryParams = '']) async {
+
     final token = await getToken();
 
     if (token != null) {
@@ -653,6 +663,58 @@ class ApiService {
         throw Exception('Failed to load programs');
       }
     } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> adminUploadLesson(int programId, String name, String description, PlatformFile file) async{
+    final token = await getToken();
+
+    if (token != null) {
+      final uri = Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program/add-lesson');
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer ${token.jwtToken}'
+        ..fields['programId'] = programId.toString()
+        ..fields['name'] = name
+        ..fields['description'] = description
+        ..files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            File(file.path!).readAsBytesSync(),
+            filename: file.name,
+            contentType: MediaType('video', 'mp4'),
+          ),
+        );
+      try {
+        final response = await request.send();
+        if (response.statusCode == 202) {
+          print('Upload success');
+        } else {
+          print('Upload failed: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Upload failed: $e');
+      }
+    }else{
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<void> adminDeleteLesson(String id) async{
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.delete(
+          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program/delete-lesson/$id'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${token.jwtToken}'
+          },);
+
+      if(response.statusCode != 202){
+        throw Exception('Failed to delete');
+      }
+    }else{
       throw Exception('Token not found');
     }
   }

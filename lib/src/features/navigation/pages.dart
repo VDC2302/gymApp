@@ -24,9 +24,7 @@ class AppPages {
     ),
     ...authPages,
     ...homePages,
-    ...trackPages,
-    ...statisticsPages,
-    ...settingsPages
+    ...statisticsPages
   ];
 }
 
@@ -58,7 +56,6 @@ List<GetPage> authPages = [
   ),
 ];
 
-//*-------------------------------Home Routes---------------------------------------------
 List<GetPage> homePages = [
   GetPage(
     name: HomeRoutes.main,
@@ -68,10 +65,6 @@ List<GetPage> homePages = [
   ),
 ];
 
-//*-------------------------------Track Routes--------------------------------------------
-List<GetPage> trackPages = [];
-
-//*---------------------------Statiststics Routes-----------------------------------------
 List<GetPage> statisticsPages = [
   GetPage(
       name: StatisticRoutes.stats,
@@ -80,6 +73,3 @@ List<GetPage> statisticsPages = [
       transitionDuration: const Duration(milliseconds: 500),
   )
 ];
-
-//*------------------------------Settings Routes------------------------------------------
-List<GetPage> settingsPages = [];

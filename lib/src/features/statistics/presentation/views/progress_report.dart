@@ -22,6 +22,12 @@ class _ProgressReportState extends State<ProgressReport> {
   String _waistDate = '';
   String _hipsDate = '';
   String _caloriesDate = '';
+  int? _weightId;
+  int? _chestId;
+  int? _waistId;
+  int? _hipsId;
+  int? _caloriesId;
+
 
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _chestController = TextEditingController();
@@ -54,78 +60,97 @@ class _ProgressReportState extends State<ProgressReport> {
         _waistDate = waistData?['createdDate'] ?? '';
         _hipsDate = hipsData?['createdDate'] ?? '';
         _caloriesDate = caloriesData?['createdDate'] ?? '';
+
+        _weightId = weightData?['id'];
+        _chestId = chestData?['id'];
+        _waistId = waistData?['id'];
+        _hipsId = hipsData?['id'];
+        _caloriesId = caloriesData?['id'];
       });
     } catch (e) {
       print(e.toString());
     }
   }
 
+  Future<bool> _hasDataForDate(String date, String type) async {
+    try {
+      final trackingValues = await apiService.getTrackingValues(type.toUpperCase());
+
+      return trackingValues.any((data) => data['date'] == date);
+    } catch (e) {
+      print('Failed to check data for date: $e');
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 15.dx),
-        child: Column(
-          children: [
-            SparkleContainer(
-              height: 157.dy,
-              isBgWhite: true,
-              fit: BoxFit.cover,
-              padding: EdgeInsets.all(10.dx),
-              decoration: BoxDecoration(
-                color: appColors.white,
-                borderRadius: BorderRadius.circular(5),
+    return RefreshIndicator(onRefresh: _getTrackingValues,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.dx),
+          child: Column(
+            children: [
+              SparkleContainer(
+                height: 157.dy,
+                isBgWhite: true,
+                fit: BoxFit.cover,
+                padding: EdgeInsets.all(10.dx),
+                decoration: BoxDecoration(
+                  color: appColors.white,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: _measureContent('Calories Burned', 'CALORIES', _calories, _caloriesDate, _caloriesController, _caloriesId),
               ),
-              child: _measureContent('Calories Burned', 'CALORIES', _calories, _caloriesDate, _caloriesController),
-            ),
-            YBox(30.dy),
-            SparkleContainer(
-              height: 157.dy,
-              fit: BoxFit.cover,
-              padding: EdgeInsets.all(10.dx),
-              decoration: BoxDecoration(
-                color: appColors.green,
-                borderRadius: BorderRadius.circular(5),
+              YBox(30.dy),
+              SparkleContainer(
+                height: 157.dy,
+                fit: BoxFit.cover,
+                padding: EdgeInsets.all(10.dx),
+                decoration: BoxDecoration(
+                  color: appColors.green,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: _measureContent('Weight', 'WEIGHT', _weight, _weightDate, _weightController, _weightId),
               ),
-                child: _measureContent('Weight', 'WEIGHT', _weight, _weightDate, _weightController),
-            ),
-            YBox(30.dy),
-            SparkleContainer(
-              height: 157.dy,
-              isBgWhite: true,
-              fit: BoxFit.cover,
-              padding: EdgeInsets.all(10.dx),
-              decoration: BoxDecoration(
-                color: appColors.white,
-                borderRadius: BorderRadius.circular(5),
+              YBox(30.dy),
+              SparkleContainer(
+                height: 157.dy,
+                isBgWhite: true,
+                fit: BoxFit.cover,
+                padding: EdgeInsets.all(10.dx),
+                decoration: BoxDecoration(
+                  color: appColors.white,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: _measureContent('Chest', 'CHEST', _chest, _chestDate, _chestController, _chestId),
               ),
-              child: _measureContent('Chest', 'CHEST', _chest, _chestDate, _chestController),
-            ),
-            YBox(30.dy),
-            SparkleContainer(
-              height: 157.dy,
-              fit: BoxFit.cover,
-              padding: EdgeInsets.all(10.dx),
-              decoration: BoxDecoration(
-                color: appColors.green,
-                borderRadius: BorderRadius.circular(5),
+              YBox(30.dy),
+              SparkleContainer(
+                height: 157.dy,
+                fit: BoxFit.cover,
+                padding: EdgeInsets.all(10.dx),
+                decoration: BoxDecoration(
+                  color: appColors.green,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: _measureContent('Waist', 'WAIST', _waist, _waistDate, _waistController, _waistId),
               ),
-              child: _measureContent('Waist', 'WAIST', _waist, _waistDate, _waistController),
-            ),
-            YBox(30.dy),
-            SparkleContainer(
-              height: 157.dy,
-              isBgWhite: true,
-              fit: BoxFit.cover,
-              padding: EdgeInsets.all(10.dx),
-              decoration: BoxDecoration(
-                color: appColors.white,
-                borderRadius: BorderRadius.circular(5),
+              YBox(30.dy),
+              SparkleContainer(
+                height: 157.dy,
+                isBgWhite: true,
+                fit: BoxFit.cover,
+                padding: EdgeInsets.all(10.dx),
+                decoration: BoxDecoration(
+                  color: appColors.white,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: _measureContent('Hips', 'HIPS', _hips, _hipsDate, _hipsController, _hipsId),
               ),
-              child: _measureContent('Hips', 'HIPS', _hips, _hipsDate, _hipsController),
-            ),
-            YBox(30.dy),
-          ],
+              YBox(30.dy),
+            ],
+          ),
         ),
       ),
     );
@@ -138,6 +163,7 @@ class _ProgressReportState extends State<ProgressReport> {
     required String initialDate,
     required ValueChanged<String> onDateSelected,
     required Future<void> Function(String value, String date) onSave,
+    required int? id, // Add this parameter
   }) async {
     TextEditingController dateController = TextEditingController(text: initialDate);
 
@@ -151,12 +177,12 @@ class _ProgressReportState extends State<ProgressReport> {
             children: [
               TextField(
                 controller: valueController,
-                decoration: InputDecoration(labelText: '$title Value'),
+                decoration: InputDecoration(labelText: '$title Value', labelStyle: const TextStyle(color: Colors.black)),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: dateController,
-                decoration: const InputDecoration(labelText: 'Date'),
+                decoration: const InputDecoration(labelText: 'Date', labelStyle: TextStyle(color: Colors.black)),
                 readOnly: true,
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
@@ -175,18 +201,25 @@ class _ProgressReportState extends State<ProgressReport> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              child: const Text('Cancel'),
             ),
             TextButton(
-              child: const Text('Save'),
               onPressed: () async {
                 await onSave(valueController.text, dateController.text);
                 await _getTrackingValues();
                 Navigator.of(context).pop();
               },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.black,
+              ),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -198,6 +231,7 @@ class _ProgressReportState extends State<ProgressReport> {
     required String title,
     required TextEditingController valueController,
     required String date,
+    required int? id, // Add this parameter
     required Future<void> Function(String value, String date) onSave,
   }) {
     return InkWell(
@@ -212,7 +246,10 @@ class _ProgressReportState extends State<ProgressReport> {
               date = newDate;
             });
           },
-          onSave: onSave,
+          onSave: (newValue, newDate) async {
+            await onSave(newValue, newDate);
+          },
+          id: id, // Pass ID to dialog
         );
       },
       child: Container(
@@ -239,6 +276,7 @@ class _ProgressReportState extends State<ProgressReport> {
       double? value,
       String date,
       TextEditingController controller,
+      int? id, // Change to int?
       ) {
     return Column(
       children: [
@@ -250,7 +288,7 @@ class _ProgressReportState extends State<ProgressReport> {
               text: title,
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-                color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
+              color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             SvgAsset(
               assetName: arrowRight,
@@ -269,8 +307,8 @@ class _ProgressReportState extends State<ProgressReport> {
               color: type == 'WEIGHT' || type == 'WAIST' ? appColors.white : appColors.black,
             ),
             const Spacer(),
-                SvgAsset(assetName: type == 'WEIGHT' ? kgIcon
-                    : type == 'CALORIES' ? exploreFilled : fireIcon),
+            SvgAsset(assetName: type == 'WEIGHT' ? kgIcon
+                : type == 'CALORIES' ? exploreFilled : fireIcon),
           ],
         ),
         AppText(
@@ -288,10 +326,14 @@ class _ProgressReportState extends State<ProgressReport> {
             title: title,
             valueController: controller,
             date: date,
+            id: id, // Pass id here
             onSave: (newValue, newDate) async {
-              await apiService.postTrackingValue(newValue, type,
-                  newDate.isEmpty ? DateTime.now().toString().split(
-                      ' ')[0] : newDate);
+              if (id != null) {
+                print('id: $id\nnew value: $newValue\ntype: $type\nnew date: $newDate');
+                await apiService.editTrackingValue(id, newValue, type, newDate);
+              } else {
+                await apiService.postTrackingValue(newValue, type, newDate);
+              }
 
               setState(() {
                 controller.text = newValue;

@@ -55,7 +55,6 @@ class _HomeViewState extends State<HomeView> {
   Future<void> _getFoodCalories() async {
     try {
       final foodCalories = await apiService.getUserTodayCalories();
-      print('calo: $foodCalories');
       setState(() {
         _foodCalories = foodCalories['dailyCalories'];
       });

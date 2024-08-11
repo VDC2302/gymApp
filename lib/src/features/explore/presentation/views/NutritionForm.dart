@@ -76,7 +76,7 @@ class _NutritionFormState extends State<NutritionForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nutrition Form'),
+        title: const Text('Add Food'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

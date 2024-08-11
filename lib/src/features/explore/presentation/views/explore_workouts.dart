@@ -61,11 +61,13 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
         final queryParams = searchQuery != null
             ? '?title.contains=$searchQuery'
             : '';
+
         final response = isAdmin
             ? await apiService.adminGetAllTrainingProgram(
             currentPage, selectedType, queryParams)
             : await apiService.getAllTrainingProgram(
             currentPage, selectedType, queryParams);
+        print(searchQuery);
         setState(() {
           workouts.addAll(List<Map<String, dynamic>>.from(response['content']));
           _filterWorkouts();
@@ -98,10 +100,10 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   }
 
   void _filterWorkouts() {
-    final query = _searchController.text;
+    final query = _searchController.text.toLowerCase();
     setState(() {
       filteredWorkouts = workouts.where((workout) {
-        final title = workout['title'];
+        final title = workout['title'].toString().toLowerCase();
         return title.contains(query);
       }).toList();
     });
@@ -122,14 +124,16 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
     );
   }
 
-  void _refreshWorkouts() {
+  Future<void> _refreshWorkouts() async {
     setState(() {
       workouts.clear();
       filteredWorkouts.clear();
       currentPage = 0;
       hasMore = true;
+      isSearching = false;
+      _searchController.clear();
     });
-    _getWorkouts();
+    await _getWorkouts();
   }
 
   @override
@@ -145,151 +149,152 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       floatingActionButton: isAdmin
           ? FloatingActionButton(
         onPressed: () => _showAddWorkoutDialog(context),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.green,
         child: const Icon(Icons.add, color: Colors.white),
       )
           : null, // Hide the button if not an admin
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent &&
-              !isLoadingMore && hasMore) {
-            _getWorkouts();
-          }
-          return false;
-        },
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15.dx),
-            child: Column(
-              children: [
-                // Toggle search bar visibility
-                if (isSearching)
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10.dy),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search by title...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors
-                              .black), // Change border color when focused
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            setState(() {
-                              isSearching = false;
-                              _searchController.clear();
-                              _filterWorkouts();
-                            });
-                          },
+          : RefreshIndicator(
+        onRefresh: _refreshWorkouts,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent &&
+                !isLoadingMore && hasMore) {
+              _getWorkouts();
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15.dx),
+              child: Column(
+                children: [
+                  // Toggle search bar visibility
+                  if (isSearching)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.dy),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search by title...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.black), // Change border color when focused
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              setState(() {
+                                isSearching = false;
+                                _searchController.clear();
+                                _filterWorkouts();
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildTypeButton('Online', 'ONLINE'),
-                    _buildTypeButton('Offline', 'OFFLINE'),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          if (isSearching) {
-                            _searchController.clear(); // Clear the search text
-                            _filterWorkouts(); // Update the workouts list
-                          }
-                          isSearching = !isSearching;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: isSearching
-                            ? Colors.black
-                            : const Color(0xffE5E5E5),
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(15.0),
-                      ),
-                      child: isSearching
-                          ? Text(
-                        'Cancel',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                          : const Icon(
-                        CupertinoIcons.search, color: Colors.black,),
-                    ),
-                  ],
-                ),
-                if (filteredWorkouts.isEmpty && !isLoading)
-                  const Center(child: Text('No workouts available'))
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: filteredWorkouts.length +
-                        (hasMore && isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == filteredWorkouts.length) {
-                        // Show loading indicator if there are more items to load
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      final workout = filteredWorkouts[index];
-                      return GestureDetector(
-                        onTap: () {
-                          _showWorkoutDetails(
-                              workout['title'],
-                              workout['type'],
-                              workout['description'],
-                              workout['startDate'],
-                              workout['startTime'],
-                              workout['id']
-                          );
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildTypeButton('Online', 'ONLINE'),
+                      _buildTypeButton('Offline', 'OFFLINE'),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            if (isSearching) {
+                              _searchController.clear(); // Clear the search text
+                              _filterWorkouts(); // Update the workouts list
+                            }
+                            isSearching = !isSearching;
+                          });
                         },
-                        child: Column(
-                          children: [
-                            SparkleContainer(
-                              height: 148.dy,
-                              isBgWhite: index % 3 == 1,
-                              decoration: BoxDecoration(
-                                color: index % 3 == 0
-                                    ? appColors.black
-                                    : index % 3 == 1
-                                    ? appColors.white
-                                    : appColors.green,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: workoutContent(
-                                topText: workout['title'].toUpperCase(),
-                                description: workout['description'],
-                                type: workout['type'],
-                                startDate: workout['startDate'],
-                                startTime: workout['startTime'],
-                                isBgWhite: index % 3 == 1,
-                              ),
-                            ),
-                            if (index < filteredWorkouts.length - 1) YBox(
-                                15.dy),
-                          ],
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: isSearching
+                              ? Colors.black
+                              : const Color(0xffE5E5E5),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(15.0),
                         ),
-                      );
-                    },
+                        child: isSearching
+                            ? Text(
+                          'Cancel',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                            : const Icon(
+                          CupertinoIcons.search, color: Colors.black,),
+                      ),
+                    ],
                   ),
-                if (isLoadingMore && filteredWorkouts.isEmpty)
-                  const Center(child: CircularProgressIndicator()),
-                YBox(30.dy),
-              ],
+                  if (filteredWorkouts.isEmpty && !isLoading)
+                    const Center(child: Text('No workouts available'))
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredWorkouts.length +
+                          (hasMore && isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == filteredWorkouts.length) {
+                          // Show loading indicator if there are more items to load
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        final workout = filteredWorkouts[index];
+                        return GestureDetector(
+                          onTap: () {
+                            _showWorkoutDetails(
+                                workout['title'],
+                                workout['type'],
+                                workout['description'],
+                                workout['startDate'],
+                                workout['startTime'],
+                                workout['id']
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              SparkleContainer(
+                                height: 148.dy,
+                                isBgWhite: index % 3 == 1,
+                                decoration: BoxDecoration(
+                                  color: index % 3 == 0
+                                      ? appColors.black
+                                      : index % 3 == 1
+                                      ? appColors.white
+                                      : appColors.green,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: workoutContent(
+                                  topText: workout['title'].toUpperCase(),
+                                  description: workout['description'],
+                                  type: workout['type'],
+                                  startDate: workout['startDate'],
+                                  startTime: workout['startTime'],
+                                  isBgWhite: index % 3 == 1,
+                                ),
+                              ),
+                              if (index < filteredWorkouts.length - 1) YBox(15.dy),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  if (isLoadingMore && filteredWorkouts.isEmpty)
+                    const Center(child: CircularProgressIndicator()),
+                  YBox(30.dy),
+                ],
+              ),
             ),
           ),
         ),
@@ -432,21 +437,23 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
                   ),
                 ),
                 SizedBox(height: 10.dy),
-                Text(
-                  type == 'OFFLINE' ? 'Start Date: $startDate' : '',
+                type == 'OFFLINE' ? Text(
+                  'Start Date: $startDate',
                   style: GoogleFonts.inter(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
                   ),
-                ),
+                ) : SizedBox(height: 0.dy,),
+
                 SizedBox(height: 10.dy),
-                Text(
+                type == 'OFFLINE' ? Text(
                   'Start Time: $startTime',
                   style: GoogleFonts.inter(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
                   ),
-                ),
+                ) : SizedBox(height: 0.dy),
+
                 SizedBox(height: 10.dy),
                 Text(
                   'Description: $description',
@@ -697,7 +704,6 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
   @override
   void initState() {
     super.initState();
-    // Initialize the controllers with the current workout details
     final workout = widget.workout;
     titleController.text = workout['title'] ?? '';
     descriptionController.text = workout['description'] ?? '';
@@ -711,7 +717,7 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
   Future<void> _submitWorkout() async {
     try {
       await apiService.adminUpdateWorkout(
-        widget.workout['id'], // Pass the workout ID for updating
+        widget.workout['id'],
         titleController.text,
         descriptionController.text,
         selectedType,
@@ -841,18 +847,18 @@ class _EditWorkoutFormState extends State<EditWorkoutForm> {
             children: [
               ElevatedButton(
                 onPressed: (){
-                  print(widget.workout);
                   if (selectedType == 'ONLINE') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LessonView(workout: widget.workout), //error here
+                        builder: (context) => LessonView(workout: widget.workout),
                       ),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: Colors.black,
+                  foregroundColor: selectedType == 'ONLINE' ? Colors.white : Colors.black,
+                  backgroundColor: selectedType == 'ONLINE' ? Colors.black : Colors.grey,
                 ),
                 child: const Text('Lessons'),
               ),

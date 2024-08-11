@@ -90,15 +90,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Password',
                 isPasswordField: true,
               ),
-              StartAlignedText(
-                text: 'Forgot password?',
-                style: TextStyle(
-                  color: appColors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              YBox(74.dy),
+              // StartAlignedText(
+              //   text: 'Forgot password?',
+              //   style: TextStyle(
+              //     color: appColors.white,
+              //     fontSize: 13.sp,
+              //     fontWeight: FontWeight.w800,
+              //   ),
+              // ),
+              YBox(50.dy),
 
               if (_errorMessage != null)
                 Padding(
