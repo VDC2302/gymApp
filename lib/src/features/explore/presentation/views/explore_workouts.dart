@@ -24,7 +24,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   bool isLoadingMore = false;
   bool isSearching = false;
   bool hasMore = true;
-  bool isAdmin = false;
+  String isAdmin = 'false';
   int currentPage = 0;
   final int pageSize = 5;
   String selectedType = 'ONLINE';
@@ -33,16 +33,20 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   @override
   void initState() {
     super.initState();
+    _initializeState();
+  }
+
+  Future<void> _initializeState() async {
+    await _checkIfAdmin(); // Wait for _checkIfAdmin to complete
     _getWorkouts();
-    _searchController.addListener(_filterWorkouts);
-    _checkIfAdmin();
+    _searchController.addListener(_filterWorkouts);// Then call _getWorkouts
   }
 
   Future<void> _checkIfAdmin() async {
     try {
       final result = await apiService.checkTarget();
       setState(() {
-        isAdmin = result == 'admin';
+        isAdmin = result;
       });
     } catch (e) {
       print('Failed to check admin status: $e');
@@ -61,13 +65,11 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
         final queryParams = searchQuery != null
             ? '?title.contains=$searchQuery'
             : '';
-
-        final response = isAdmin
+        final response = isAdmin == 'admin'
             ? await apiService.adminGetAllTrainingProgram(
             currentPage, selectedType, queryParams)
             : await apiService.getAllTrainingProgram(
             currentPage, selectedType, queryParams);
-        print(searchQuery);
         setState(() {
           workouts.addAll(List<Map<String, dynamic>>.from(response['content']));
           _filterWorkouts();
@@ -146,7 +148,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: appColors.lightGrey,
-      floatingActionButton: isAdmin
+      floatingActionButton: isAdmin == 'admin'
           ? FloatingActionButton(
         onPressed: () => _showAddWorkoutDialog(context),
         backgroundColor: Colors.green,
@@ -403,7 +405,7 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
       String? startDate,
       String? startTime,
       int id) {
-    if (isAdmin) {
+    if (isAdmin == 'admin') {
       showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {

@@ -114,6 +114,7 @@ class ApiService {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
       );
+      print('statuscode: ${response.statusCode}');
       if(response.statusCode == 202){
         if(response.body.isNotEmpty){
           return json.decode(response.body).toString();
@@ -688,6 +689,29 @@ class ApiService {
           'Authorization': 'Bearer ${token.jwtToken}'
         },
       );
+      if (response.statusCode == 202) {
+        final responseData = json.decode(response.body);
+        return responseData;
+      } else {
+        throw Exception('Failed to load programs');
+      }
+    } else {
+      throw Exception('Token not found');
+    }
+  }
+
+  Future<Map<String, dynamic>> adminGetAllOnlineTrainingProgram(
+      int pageNumber) async {
+    final token = await getToken();
+
+    if (token != null) {
+      final response = await http.get(
+          Uri.parse(
+              'http://10.0.2.2:8080/api/v1/admin/training-program/online?page=$pageNumber'),
+          headers: {
+            'Authorization': 'Bearer ${token.jwtToken}'
+          });
+      print(response.statusCode);
       if (response.statusCode == 202) {
         final responseData = json.decode(response.body);
         return responseData;

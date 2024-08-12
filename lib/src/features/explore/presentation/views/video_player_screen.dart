@@ -6,7 +6,7 @@ import 'package:chewie/chewie.dart';
 class VideoPlayerDialog extends StatefulWidget {
   final String url;
   final int id;
-  final bool isAdmin;
+  final String isAdmin;
   final VoidCallback onDelete;
 
   const VideoPlayerDialog({super.key, required this.url, required this.id, required this.isAdmin, required this.onDelete});
@@ -71,7 +71,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
         ),
       ),
       actions: [
-        if (widget.isAdmin)
+        if (widget.isAdmin == 'admin')
           ElevatedButton(
             onPressed: _deleteVideo,
             style: ElevatedButton.styleFrom(

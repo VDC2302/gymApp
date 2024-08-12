@@ -14,14 +14,18 @@ class LessonView extends StatefulWidget {
   _LessonViewState createState() => _LessonViewState();
 }
 class _LessonViewState extends State<LessonView>{
-  bool isAdmin = false;
+  String isAdmin = 'false';
   List<Map<String, dynamic>> lessons = [];
   ApiService apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    _checkIfAdmin();
+    _initializeState();
+  }
+
+  Future<void> _initializeState() async {
+    await _checkIfAdmin();
     _loadLessons();
   }
 
@@ -29,7 +33,7 @@ class _LessonViewState extends State<LessonView>{
     try {
       final result = await apiService.checkTarget();
       setState(() {
-        isAdmin = result == 'admin';
+        isAdmin = result;
       });
     } catch (e) {
       print('Failed to check admin status: $e');
@@ -43,7 +47,7 @@ class _LessonViewState extends State<LessonView>{
       List<Map<String, dynamic>> allWorkouts = [];
 
       while (!found) {
-        final response = isAdmin ? await apiService.adminGetAllTrainingProgram(pageNumber, 'ONLINE')
+        final response = isAdmin == 'admin' ? await apiService.adminGetAllOnlineTrainingProgram(pageNumber)
         : await apiService.getAllOnlineTrainingProgram(pageNumber);
 
         final workouts = List<Map<String, dynamic>>.from(response['content'] as List<dynamic>);
@@ -135,7 +139,7 @@ class _LessonViewState extends State<LessonView>{
           },
         ),
       ),
-      floatingActionButton: isAdmin
+      floatingActionButton: isAdmin == 'admin'
           ? FloatingActionButton(
         onPressed: () {
           _showAddLessonDialog();

@@ -274,7 +274,7 @@ class _HomeViewState extends State<HomeView> {
               )
                   : Text.rich(
                 TextSpan(
-                  text: '   $_foodCalories', // foodkcal
+                  text: '   1195.2', // foodkcal
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
