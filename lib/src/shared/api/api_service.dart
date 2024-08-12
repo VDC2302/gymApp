@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http_parser/http_parser.dart';
 
+import '../../features/statistics/presentation/views/logs.dart';
+
 class Token {
   final String jwtToken;
   final String refreshToken;
@@ -272,6 +274,36 @@ class ApiService {
         }
       }
       else {
+        throw Exception('Token not found');
+      }
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<List<TrackingData>> graphTrackingData(String trackingType) async {
+    try {
+      final token = await getToken();
+      if (token != null) {
+        final response = await http.get(
+          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${token.jwtToken}',
+          },
+        );
+
+        if (response.statusCode == 202) {  // Change status code check to 200
+          List<dynamic> responseData = json.decode(response.body);
+          List<TrackingData> trackingData = responseData
+              .map((data) => TrackingData.fromJson(data))
+              .where((data) => data.trackingType == trackingType) // Filter by trackingType
+              .toList();
+          return trackingData;
+        } else {
+          throw Exception('Failed to fetch data');
+        }
+      } else {
         throw Exception('Token not found');
       }
     } catch (e) {

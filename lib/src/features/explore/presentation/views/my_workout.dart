@@ -76,10 +76,10 @@ class _MyWorkoutState extends State<MyWorkout>{
   }
 
   void _filterWorkouts() {
-    final query = _searchController.text;
+    final query = _searchController.text.toLowerCase();
     setState(() {
       filteredWorkouts = workouts.where((workout) {
-        final title = workout['title'];
+        final title = workout['title'].toString().toLowerCase();
         return title.contains(query);
       }).toList();
     });

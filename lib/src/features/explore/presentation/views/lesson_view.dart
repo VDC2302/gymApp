@@ -43,7 +43,9 @@ class _LessonViewState extends State<LessonView>{
       List<Map<String, dynamic>> allWorkouts = [];
 
       while (!found) {
-        final response = await apiService.adminGetAllTrainingProgram(pageNumber, 'ONLINE');
+        final response = isAdmin ? await apiService.adminGetAllTrainingProgram(pageNumber, 'ONLINE')
+        : await apiService.getAllOnlineTrainingProgram(pageNumber);
+
         final workouts = List<Map<String, dynamic>>.from(response['content'] as List<dynamic>);
 
         allWorkouts.addAll(workouts);

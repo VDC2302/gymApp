@@ -1,141 +1,128 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class Logs extends StatefulWidget {
-  const Logs({Key? key}) : super(key: key);
+  const Logs({super.key,});
 
   @override
   _LogsState createState() => _LogsState();
 }
 
 class _LogsState extends State<Logs> {
+  bool isLoading = false;
+  List<TrackingData> latestData = [];
+  final String trackingType = 'HIPS'; // Example tracking type
   ApiService apiService = ApiService();
-  List<FlSpot> dataPoints = [];
-  bool isLoading = true;
+  late Future<List<TrackingData>> caloriesData;
+  late Future<List<TrackingData>> weightData;
+  late Future<List<TrackingData>> chestData;
+  late Future<List<TrackingData>> waistData;
+  late Future<List<TrackingData>> hipsData;
+
 
   @override
   void initState() {
     super.initState();
-    _getTrackingValues();
+    caloriesData = apiService.graphTrackingData('CALORIES');
+    weightData = apiService.graphTrackingData('WEIGHT');
+    chestData = apiService.graphTrackingData('CHEST');
+    waistData = apiService.graphTrackingData('WAIST');
+    hipsData = apiService.graphTrackingData('HIPS');
+
   }
 
-  Future<void> _getTrackingValues() async {
-    try {
-      final trackingData = await apiService.getTrackingValues('WEIGHT');
-
-      // Get the last 7 items from the sorted tracking data
-      final latestData = trackingData.take(7).toList();
-
-      setState(() {
-        dataPoints = latestData
-            .map((data) => FlSpot(
-            (DateTime.parse(data['createdDate']).millisecondsSinceEpoch / 1000).toDouble(),
-            data['value'].toDouble()))
-            .toList();
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Failed to load tracking values: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  // Helper function to format the date from the value (in seconds since epoch)
-  String formatDate(double value) {
-    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt() * 1000);
-    return '${date.day}/${date.month}';
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
-    // final double minX = dataPoints.isNotEmpty ? dataPoints.first.x : 0;
-    // final double maxX = dataPoints.isNotEmpty ? dataPoints.last.x : 0;
-    // final int totalPoints = dataPoints.length;
-    // final double interval = totalPoints > 7 ? (maxX - minX) : 1;
-    //
-    // // Keep track of displayed dates to avoid duplicates
-    // Set<String> displayedDates = {};
-    //
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     title: Text('Weight'),
-    //   ),
-    //   body: isLoading
-    //       ? const Center(child: CircularProgressIndicator())
-    //       : Padding(
-    //     padding: const EdgeInsets.all(16.0),
-    //     child: LineChart(
-    //       LineChartData(
-    //         gridData: const FlGridData(show: true),
-    //         titlesData: FlTitlesData(
-    //           bottomTitles: AxisTitles(
-    //             sideTitles: SideTitles(
-    //               showTitles: false,
-    //               reservedSize: 100,
-    //                interval: interval,
-    //               getTitlesWidget: (value, meta) {
-    //                 String formattedDate = formatDate(value);
-    //                 if (displayedDates.contains(formattedDate)) {
-    //                   return const SizedBox.shrink();
-    //                 }
-    //                 displayedDates.add(formattedDate);
-    //                 return SideTitleWidget(
-    //                   axisSide: meta.axisSide,
-    //                   space: 8.0,
-    //                   child: Text(
-    //                     formattedDate, // X-Axis Label
-    //                     style: const TextStyle(
-    //                       color: Colors.black,
-    //                       fontWeight: FontWeight.bold,
-    //                       fontSize: 12,
-    //                     ),
-    //                   ),
-    //                 );
-    //               },
-    //             ),
-    //           ),
-    //           leftTitles: AxisTitles(
-    //             sideTitles: SideTitles(
-    //               showTitles: true,
-    //               reservedSize: 28,
-    //               getTitlesWidget: (value, meta) {
-    //                 return Text(
-    //                   '${value.toInt()}', // Y-Axis Label
-    //                   style: const TextStyle(
-    //                     color: Colors.black,
-    //                     fontWeight: FontWeight.bold,
-    //                     fontSize: 12,
-    //                   ),
-    //                 );
-    //               },
-    //             ),
-    //           ),
-    //         ),
-    //         borderData: FlBorderData(
-    //           show: true,
-    //           border: Border.all(color: const Color(0xff37434d), width: 1),
-    //         ),
-    //         minX: minX, // X-Axis Minimum Value
-    //         maxX: maxX, // X-Axis Maximum Value
-    //         minY: dataPoints.isNotEmpty ? dataPoints.map((e) => e.y).reduce((a, b) => a < b ? a : b) : 0, // Y-Axis Minimum Value
-    //         maxY: dataPoints.isNotEmpty
-    //             ? dataPoints.map((e) => e.y).reduce((a, b) => a > b ? a : b)
-    //             : 0, // Y-Axis Maximum Value
-    //         lineBarsData: [
-    //           LineChartBarData(
-    //             spots: dataPoints, // Data Points
-    //             color: Colors.blue,
-    //             barWidth: 4,
-    //             belowBarData: BarAreaData(show: false),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildChart(caloriesData, 'Calories'),
+            _buildChart(weightData, 'Weight'),
+            _buildChart(chestData, 'Chest'),
+            _buildChart(waistData, 'Waist'),
+            _buildChart(hipsData, 'Hips'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChart(Future<List<TrackingData>> dataFuture, String title) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        height: 300, // Adjust the height as needed
+        child: FutureBuilder<List<TrackingData>>(
+          future: dataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No data available'));
+            } else {
+              return SfCartesianChart(
+                primaryXAxis: const CategoryAxis(
+                  labelRotation: 45,
+                ),
+                primaryYAxis: const NumericAxis(
+                  title: AxisTitle(text: 'Value'),
+                ),
+                title: ChartTitle(
+                  text: title,
+                  textStyle: TextStyle(fontSize: 14), // Smaller chart title
+                ),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <CartesianSeries>[
+                  BarSeries<TrackingData, String>(
+                    dataSource: snapshot.data!,
+                    xValueMapper: (TrackingData data, _) {
+                      DateTime parsedDate = DateTime.parse(data.createdDate); // Parse the full date
+                      String formattedDate = DateFormat('MM-dd').format(parsedDate); // Format to MM-dd
+                      return formattedDate; // Return the formatted date string
+                    },
+                    yValueMapper: (TrackingData data, _) => data.value,
+                    name: title,
+                    color: Colors.blue,
+                  )
+                ],
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class TrackingData {
+  final int id;
+  final String trackingType;
+  final double value;
+  final String createdDate;
+  final String createdTime;
+
+  TrackingData({
+    required this.id,
+    required this.trackingType,
+    required this.value,
+    required this.createdDate,
+    required this.createdTime,
+  });
+
+  factory TrackingData.fromJson(Map<String, dynamic> json) {
+    return TrackingData(
+      id: json['id'],
+      trackingType: json['trackingType'],
+      value: json['value'],
+      createdDate: json['createdDate'],
+      createdTime: json['createdTime'],
+    );
   }
 }
