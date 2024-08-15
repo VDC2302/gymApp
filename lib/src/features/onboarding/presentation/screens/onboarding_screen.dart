@@ -83,38 +83,57 @@ class OnboardingScreen extends HookConsumerWidget {
                   title: 'Continue',
                   onTap: () async {
                     if (currentPage.value == 1) {
-                      // Attempt to put onboarding data
-                      final onboardingViewModel = ref.read(onboardingProvider);
-                      ApiService apiService = ApiService();
 
-                      try {
-                        await apiService.postUserTarget(
-                          height: double.tryParse(onboardingViewModel.userHeight) ?? 0.0,
-                          weight: double.tryParse(onboardingViewModel.userWeight) ?? 0.0,
-                          activityFrequency: onboardingViewModel.activityFrequency,
+                      final onboardingViewModel = ref.read(onboardingProvider);
+
+
+                      if (onboardingViewModel.userHeight.isEmpty || onboardingViewModel.userWeight.isEmpty) {
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Incomplete Information'),
+                            content: const Text('Please enter both your height and weight to proceed.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
                         );
-                        // Navigate to Home if successful
-                        Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
-                      } catch (e) {
-                        // Handle errors, such as displaying an error dialog
-                        if (e is UnauthorizedException) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Access Denied'),
-                              content: const Text('You are not authorized to proceed. Please check your inputs.'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
+                      } else {
+
+                        ApiService apiService = ApiService();
+
+                        try {
+                          await apiService.postUserTarget(
+                            height: double.tryParse(onboardingViewModel.userHeight) ?? 0.0,
+                            weight: double.tryParse(onboardingViewModel.userWeight) ?? 0.0,
+                            activityFrequency: onboardingViewModel.activityFrequency,
                           );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('An error occurred. Please try again later.')),
-                          );
+                          // Navigate to Home if successful
+                          Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
+                        } catch (e) {
+                          if (e is UnauthorizedException) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Access Denied'),
+                                content: const Text('You are not authorized to proceed. Please check your inputs.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please check your information again.')),
+                            );
+                          }
                         }
                       }
                     } else {

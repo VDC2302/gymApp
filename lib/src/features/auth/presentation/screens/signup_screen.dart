@@ -27,11 +27,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _errorMessage = '';
     });
 
+    // Check if birth year is empty
+    int? birthYear;
+    if (_birthYearController.text.isNotEmpty) {
+      try {
+        birthYear = int.parse(_birthYearController.text);
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Please check your information again';
+        });
+        return;
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Please check your information again';
+      });
+      return;
+    }
+
     ApiService apiService = ApiService();
     final result = await apiService.register(
       _firstNameController.text,
       _lastNameController.text,
-      int.parse(_birthYearController.text),
+      birthYear,
       _usernameController.text,
       _passwordController.text,
       _selectedGender,
@@ -44,11 +64,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (result != null && result['success'] == true) {
       Navigator.pushReplacementNamed(context, AuthRoutes.loginOrSignUp);
     } else {
+      print('result $result');
       setState(() {
-        if (result != null && result['errors'] != null && result['errors'].isNotEmpty) {
-          _errorMessage = result['errors'];
-        } else {
-          _errorMessage = result?['errors'];
+        if (result != null && result['message'] != null && result['message'].isNotEmpty) {
+          _errorMessage = result['message'];
+        }else{
+          _errorMessage = result?['message'];
         }
       });
     }
@@ -66,13 +87,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             splashImage,
             fit: BoxFit.fitHeight,
           ),
-          // Padding(
-          //   padding: const EdgeInsets.all(4.0),
-          //   child: SvgPicture.asset(
-          //     sparkleEffect,
-          //     fit: BoxFit.fitHeight,
-          //   ),
-          // ),
           AppColumn(
             height: Dims.deviceSize.height,
             width: Dims.deviceSize.width,
@@ -150,7 +164,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
 
-              YBox(74.dy),
+              YBox(50.dy),
               AppButton(
                 title: 'Create Account',
                 onTap: _register,

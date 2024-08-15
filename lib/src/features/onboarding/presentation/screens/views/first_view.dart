@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymApp/src/features/onboarding/presentation/view_models/onboarding_viewmodel.dart';
 import 'package:gymApp/src/shared/shared.dart';
@@ -31,7 +32,9 @@ class FirstView extends ConsumerWidget {
           controller: weightController,
           label: 'Weight (kg)',
           onChanged: (value) {
-            ref.read(onboardingProvider.notifier).userWeight = value;
+            ref
+                .read(onboardingProvider.notifier)
+                .userWeight = value;
           },
         ),
         YBox(30.dy),
@@ -39,7 +42,9 @@ class FirstView extends ConsumerWidget {
           controller: heightController,
           label: 'Height (cm)',
           onChanged: (value) {
-            ref.read(onboardingProvider.notifier).userHeight = value;
+            ref
+                .read(onboardingProvider.notifier)
+                .userHeight = value;
           },
         ),
       ],
@@ -66,20 +71,21 @@ class FirstView extends ConsumerWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.dx),
           decoration: BoxDecoration(
-            color: Colors.white, // Ensure this is white
+            color: Colors.white,
             borderRadius: BorderRadius.circular(11),
             border: Border.all(color: appColors.grey),
           ),
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: onChanged,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Enter your $label',
               hintStyle: TextStyle(color: appColors.grey),
-              fillColor: Colors.white, // Add this line if needed
-              filled: true, // Ensure this is set to true
+              fillColor: Colors.white,
+              filled: true,
             ),
           ),
         ),

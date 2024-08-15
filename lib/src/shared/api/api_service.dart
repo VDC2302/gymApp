@@ -65,6 +65,46 @@ class ApiService {
     return jwtToken != null;
   }
 
+  Future<Map<String, dynamic>?> register(String firstName, String lastName,
+      int birthYear, String username, String password, String? gender) async {
+    try {
+      var data = {
+        'firstName': firstName,
+        'lastName': lastName,
+        'birthYear': birthYear,
+        'username': username,
+        'password': password,
+        'gender': gender
+      };
+      if (gender != null) {
+        data['gender'] = gender;
+      }
+      final response = await http.post(
+          Uri.parse('http://10.0.2.2:8080/api/v1/common/registration'),
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: json.encode(data)
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      if (response.statusCode == 201) {
+        return {'success': true};
+      } else {
+        List<dynamic> errorResponse = jsonDecode(response.body);
+        String errorMessage = errorResponse.isNotEmpty
+            ? errorResponse[0]['message']
+            : 'An unknown error occurred';
+        return {
+          'success': false,
+          'errors': errorMessage,
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Please check your information again'};
+    }
+  }
 
   Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
@@ -76,17 +116,18 @@ class ApiService {
           },
           body: json.encode(data));
 
-      if (response.statusCode == 200) {
+      print('body: ${response.body}');
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
         Token token = Token.fromJson(jsonMap);
         await storeToken(token);
         return {'success': true};
-      } else {
+
+      }else {
         dynamic errorResponse = json.decode(response.body);
         String errorMessage;
 
-        // Check if the error response is a List or a Map
-        if (errorResponse is List && errorResponse.isNotEmpty) {
+        if (errorResponse is List && errorResponse.isNotEmpty && response.body.isNotEmpty) {
           errorMessage = errorResponse[0]['message'];
         } else
         if (errorResponse is Map && errorResponse.containsKey('message')) {
@@ -100,7 +141,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {'success': false, 'message': e.toString()};
+      return {'success': false, 'message': 'Please check your username and password again'};
     }
   }
 
@@ -114,7 +155,6 @@ class ApiService {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
       );
-      print('statuscode: ${response.statusCode}');
       if(response.statusCode == 202){
         if(response.body.isNotEmpty){
           return json.decode(response.body).toString();
@@ -150,50 +190,9 @@ class ApiService {
         },
           body: json.encode(data)
       );
-      print(response.statusCode);
       if(response.statusCode != 202){
         throw Exception('Failed to submit data');
       }
-    }
-  }
-
-
-  Future<Map<String, dynamic>?> register(String firstName, String lastName,
-      int birthYear, String username, String password, String? gender) async {
-    try {
-      var data = {
-        'firstName': firstName,
-        'lastName': lastName,
-        'birthYear': birthYear,
-        'username': username,
-        'password': password,
-        'gender': gender
-      };
-      if (gender != null) {
-        data['gender'] = gender;
-      }
-      final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/common/registration'),
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: json.encode(data)
-      );
-
-      if (response.statusCode == 201) {
-        return {'success': true};
-      } else {
-        List<dynamic> errorResponse = jsonDecode(response.body);
-        String errorMessage = errorResponse.isNotEmpty
-            ? errorResponse[0]['message']
-            : 'An unknown error occurred';
-        return {
-          'success': false,
-          'errors': errorMessage,
-        };
-      }
-    } catch (e) {
-      return {'success': false, 'message': e.toString()};
     }
   }
 
