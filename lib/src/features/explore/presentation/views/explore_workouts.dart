@@ -79,7 +79,6 @@ class _ExploreWorkoutsState extends State<ExploreWorkouts> {
           hasMore = currentPage < response['totalPages'];
         });
       } catch (e) {
-        print('Failed to load workouts: $e');
         setState(() {
           isLoading = false;
           isLoadingMore = false;
@@ -558,7 +557,7 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -569,7 +568,7 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
               labelStyle: TextStyle(color: Colors.black),
               border: OutlineInputBorder(),
             ),
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Colors.black),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -607,8 +606,8 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
             controller: startDateController,
             decoration: InputDecoration(
               labelText: 'Start Date',
-              labelStyle: TextStyle(color: Colors.black),
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.black),
+              border: const OutlineInputBorder(),
               enabled: !isOnline, // Disable the field if online
               fillColor: isOnline ? Colors.grey[300] : null, // Grey out the field if online
               filled: isOnline,
@@ -629,13 +628,13 @@ class _AddWorkoutFormState extends State<AddWorkoutForm> {
             },
             readOnly: isOnline, // Make the field read-only if online
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           TextField(
             controller: startTimeController,
             decoration: InputDecoration(
               labelText: 'Start Time',
-              labelStyle: TextStyle(color: Colors.black),
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.black),
+              border: const OutlineInputBorder(),
               enabled: !isOnline, // Disable the field if online
               fillColor: isOnline ? Colors.grey[300] : null, // Grey out the field if online
               filled: isOnline,

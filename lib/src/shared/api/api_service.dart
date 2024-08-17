@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:get/get_connect/http/src/multipart/form_data.dart';
-import 'package:get/get_connect/http/src/multipart/multipart_file.dart';
 import 'package:http/http.dart' as http;
 import 'package:gymApp/src/features/navigation/nav.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
@@ -87,8 +85,6 @@ class ApiService {
           body: json.encode(data)
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       if (response.statusCode == 201) {
         return {'success': true};
       } else {
@@ -116,7 +112,6 @@ class ApiService {
           },
           body: json.encode(data));
 
-      print('body: ${response.body}');
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
         Token token = Token.fromJson(jsonMap);
@@ -328,8 +323,6 @@ class ApiService {
                 (item) => item['trackingType'] == trackingType,
         orElse: () => {'value' : 0.0, 'createdDate': 'N/A'});
 
-        print(item);
-
         return item;
       } else {
         print('Failed to load value');
@@ -410,7 +403,6 @@ class ApiService {
             'Authorization': 'Bearer ${token.jwtToken}'
           },
           body: json.encode(data));
-      print(response.statusCode);
       if(response.statusCode != 202){
         throw Exception('Failed to edit');
       }
@@ -710,7 +702,6 @@ class ApiService {
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
-      print(response.statusCode);
       if (response.statusCode == 202) {
         final responseData = json.decode(response.body);
         return responseData;

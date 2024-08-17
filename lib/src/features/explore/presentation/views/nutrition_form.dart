@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gymApp/src/features/explore/presentation/views/nutrition.dart';
 import 'package:intl/intl.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 
@@ -64,7 +63,7 @@ class _NutritionFormState extends State<NutritionForm> {
         Navigator.pop(context, requestData);
       } catch (error) {
         // Handle errors
-        print('Error: $error');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to post meals: $error')),
         );
@@ -77,6 +76,8 @@ class _NutritionFormState extends State<NutritionForm> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Food'),
+        backgroundColor: Colors.white,
+        elevation: 0,  // Removes shadow effect
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -147,18 +148,22 @@ class _NutritionFormState extends State<NutritionForm> {
               // Food Entries List
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: _foodEntries.length,
                 itemBuilder: (context, index) {
                   final entry = _foodEntries[index];
                   return Column(
-                    key: UniqueKey(),
+                    key: ValueKey(entry["foodNameController"]), // Unique key per entry
                     children: [
                       TextFormField(
                         controller: entry["foodNameController"],
                         decoration: InputDecoration(
-                            labelText: 'Food Name',
-                            labelStyle: TextStyle(color: appColors.black, fontWeight: FontWeight.w700)),
+                          labelText: 'Food Name',
+                          labelStyle: TextStyle(
+                            color: appColors.black,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         onSaved: (value) {
                           entry["foodNameController"].text = value ?? '';
                         },
@@ -170,8 +175,12 @@ class _NutritionFormState extends State<NutritionForm> {
                             child: TextFormField(
                               controller: entry["valueController"],
                               decoration: const InputDecoration(
-                                  labelText: 'Value',
-                                  labelStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w700)),
+                                labelText: 'Value',
+                                labelStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               keyboardType: TextInputType.number,
                               onSaved: (value) {
                                 entry["valueController"].text = value ?? '0.0';
@@ -187,7 +196,8 @@ class _NutritionFormState extends State<NutritionForm> {
                                 return DropdownMenuItem<String>(
                                   value: unit,
                                   child: Center(
-                                    child: Text(unit,
+                                    child: Text(
+                                      unit,
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
@@ -219,7 +229,8 @@ class _NutritionFormState extends State<NutritionForm> {
                     ElevatedButton(
                       onPressed: _submitForm,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text('Submit'),
                     ),

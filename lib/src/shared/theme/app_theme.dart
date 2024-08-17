@@ -8,8 +8,8 @@ final baseTheme = ThemeData.light();
 // app theme
 final ThemeData appTheme = baseTheme.copyWith(
   scaffoldBackgroundColor: appColors.scaffoldColor,
-  primaryColor: appColors.yellow,
-  dividerColor: appColors.yellow.withOpacity(.5),
+  primaryColor: appColors.green,
+  dividerColor: appColors.green.withOpacity(.5),
   brightness: Brightness.light,
   inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
     contentPadding: EdgeInsets.zero,
@@ -45,7 +45,7 @@ final ThemeData appTheme = baseTheme.copyWith(
       ),
   colorScheme: baseTheme.colorScheme
       .copyWith(
-        primary: appColors.yellow,
+        primary: appColors.green,
         secondary: appColors.green,
         error: appColors.error,
         onError: appColors.error.withOpacity(0.42),

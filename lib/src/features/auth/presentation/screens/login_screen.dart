@@ -41,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
       }
     }else{
-      print('result $result');
       setState(() {
         if (result != null && result['message'] != null && result['message'].isNotEmpty) {
           _errorMessage = result['message'];

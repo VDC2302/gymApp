@@ -24,20 +24,4 @@ class OnboardingViewModel extends ChangeNotifier {
     activityFrequency = selectedActivityFreq;
     notifyListeners();
   }
-
-  // Future<void> submitOnboardingData() async {
-  //   final weight = double.parse(userWeight) ?? 0.0; // Ensure weight is valid
-  //   final height = double.parse(userHeight) ?? 0.0; // Ensure height is valid
-  //   print('height: $height\nweight: $weight\nactivity: $activityFrequency');
-  //
-  //   try {
-  //     await _apiService.postUserTarget(
-  //       weight: weight,
-  //       height: height,
-  //       activityFrequency: activityFrequency,
-  //     );
-  //   } catch (e) {
-  //     print('Error submitting onboarding data: $e');
-  //   }
-  // }
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:gymApp/src/features/statistics/presentation/views/statistics_view.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 
@@ -178,29 +176,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildSplitTexts(String text) {
-    return Row(
-      children: [
-        XBox(10.dx),
-        AppText(
-          text: text,
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
-        ),
-        const Spacer(),
-        BounceInAnimation(
-          child: AppText(
-            text: 'see more',
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w400,
-            color: appColors.grey80,
-          ),
-        ),
-        XBox(10.dx),
-      ],
-    );
-  }
-
   Widget _buildActivityContent(HomeAct homeAct) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,7 +249,7 @@ class _HomeViewState extends State<HomeView> {
               )
                   : Text.rich(
                 TextSpan(
-                  text: '   1195.2', // foodkcal
+                  text: '   $_foodCalories', // foodkcal
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -327,7 +302,7 @@ class _HomeViewState extends State<HomeView> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          '$_weight' + 'kg',
+                          '${_weight}kg',
                           style: GoogleFonts.inter(
                             fontSize: 7.sp,
                             fontWeight: FontWeight.w500,
@@ -429,20 +404,20 @@ class _HomeViewState extends State<HomeView> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Record Workout History'),
+          title: const Text('Record Workout History'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 TextField(
                   controller: exerciseController,
-                  decoration: InputDecoration(hintText: 'Exercise Name'),
+                  decoration: const InputDecoration(hintText: 'Exercise Name'),
                 ),
                 TextField(
                   controller: caloriesController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(hintText: 'Calories'),
+                  decoration: const InputDecoration(hintText: 'Calories'),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text('Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}'),
                 ElevatedButton(
                   onPressed: () async {
@@ -458,20 +433,23 @@ class _HomeViewState extends State<HomeView> {
                       });
                     }
                   },
-                  child: Text('Pick a Date'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Pick a Date'),
                 ),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(color: Colors.black)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             ElevatedButton(
-              child: const Text('Save'),
               onPressed: () async {
                 try {
                   await apiService.postWorkoutHistory(
@@ -479,12 +457,17 @@ class _HomeViewState extends State<HomeView> {
                     double.parse(caloriesController.text),
                     selectedDate,
                   );
-                  await _fetchData(); // Refresh data after saving
-                  Navigator.of(context).pop(); // Close the dialog
+                  await _fetchData();
+                  Navigator.of(context).pop();
                 } catch (e) {
                   print('Error: $e');
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save'),
             ),
           ],
         );

@@ -64,7 +64,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (result != null && result['success'] == true) {
       Navigator.pushReplacementNamed(context, AuthRoutes.loginOrSignUp);
     } else {
-      print('result $result');
       setState(() {
         if (result != null && result['message'] != null && result['message'].isNotEmpty) {
           _errorMessage = result['message'];

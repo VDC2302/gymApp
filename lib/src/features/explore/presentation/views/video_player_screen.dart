@@ -47,7 +47,6 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
         const SnackBar(content: Text('Lesson deleted successfully!')),
       );
     } catch (e) {
-      print('Delete failed: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Delete failed: $e')),
       );

@@ -81,17 +81,17 @@ class AppOutlinedButton extends StatelessWidget {
         height: height ?? 56.72.dy,
         child: OutlinedButton(
           style: ButtonStyle(
-            padding: MaterialStatePropertyAll(
+            padding: WidgetStatePropertyAll(
                 EdgeInsets.symmetric(vertical: 12..dy)),
-            overlayColor: MaterialStatePropertyAll(
+            overlayColor: WidgetStatePropertyAll(
                 overlayColor ?? theme.primary.withOpacity(0.4)),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                 borderRadius: borderRadius ??
                     BorderRadius.circular(25), // Adjust the radius as needed
               ),
             ),
-            side: MaterialStatePropertyAll(
+            side: WidgetStatePropertyAll(
               BorderSide(
                 color: borderSideColor ?? theme.primary,
               ),

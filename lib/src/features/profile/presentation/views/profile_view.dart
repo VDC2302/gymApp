@@ -100,6 +100,7 @@ class ProfileView extends HookWidget {
   }
 
   Widget _buildProfilePicture(Map<String, dynamic> data) {
+    String? pictureName = data['profilePicture'];
     return Container(
       margin: EdgeInsets.only(top: 20.dy),
       height: 130.dy,
@@ -107,8 +108,8 @@ class ProfileView extends HookWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: appColors.white,
-        image: const DecorationImage(
-          image: AssetImage('assets/pngs/app-icon.png'),
+        image: DecorationImage(
+          image: AssetImage('assets/pngs/$pictureName.png'),
           fit: BoxFit.cover,
         ),
       ),
@@ -116,7 +117,6 @@ class ProfileView extends HookWidget {
   }
 
   Widget _buildProfileDetails(Map<String, dynamic>? data) {
-    // Safely access data with default values for null
     final firstName = data?['firstName'] ?? 'Admin';
     final lastName = data?['lastName'] ?? 'N/A';
     final gender = data?['gender'] ?? 'N/A';

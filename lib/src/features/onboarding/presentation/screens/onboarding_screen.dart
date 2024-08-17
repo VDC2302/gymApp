@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_connect/http/src/exceptions/exceptions.dart';
-import 'package:gymApp/src/features/navigation/app_navigator.dart';
 import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -112,7 +110,7 @@ class OnboardingScreen extends HookConsumerWidget {
                             weight: double.tryParse(onboardingViewModel.userWeight) ?? 0.0,
                             activityFrequency: onboardingViewModel.activityFrequency,
                           );
-                          // Navigate to Home if successful
+
                           Navigator.pushNamedAndRemoveUntil(context, HomeRoutes.main, (Route<dynamic> route) => false);
                         } catch (e) {
                           if (e is UnauthorizedException) {

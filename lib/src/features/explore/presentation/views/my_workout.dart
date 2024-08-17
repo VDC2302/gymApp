@@ -53,7 +53,6 @@ class _MyWorkoutState extends State<MyWorkout>{
           hasMore = currentPage < response['totalPages'];
         });
       } catch (e) {
-        print('Failed to load workouts: $e');
         setState(() {
           isLoading = false;
           isLoadingMore = false;

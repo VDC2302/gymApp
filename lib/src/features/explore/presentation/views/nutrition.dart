@@ -1,9 +1,8 @@
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/api/api_service.dart';
-import 'NutritionForm.dart';
+import 'nutrition_form.dart';
 
 enum MealType { breakfast, lunch, afternoon, dinner }
 
@@ -43,7 +42,7 @@ class _NutritionState extends State<Nutrition> {
     });
 
 
-    Future<Map<MealType, double>> _getTodayMealData() async {
+    Future<Map<MealType, double>> getTodayMealData() async {
       ApiService apiService = ApiService();
       List<Map<String, dynamic>> mealData = await apiService
           .getUserTodayMeal() ?? [];
@@ -69,7 +68,7 @@ class _NutritionState extends State<Nutrition> {
       return todayCalories;
     }
 
-    Future<Map<NutrientType, double>> _getThisWeekNutrientData() async {
+    Future<Map<NutrientType, double>> getThisWeekNutrientData() async {
       ApiService apiService = ApiService();
       Map<String, dynamic> thisWeekData = await apiService
           .getThisWeekNutrition();
@@ -82,8 +81,8 @@ class _NutritionState extends State<Nutrition> {
       };
     }
 
-    _todayMealDataFuture = _getTodayMealData();
-    _thisWeekNutrientFuture = _getThisWeekNutrientData();
+    _todayMealDataFuture = getTodayMealData();
+    _thisWeekNutrientFuture = getThisWeekNutrientData();
 
 
     Future.wait([_todayMealDataFuture, _thisWeekNutrientFuture]).then((_) {
@@ -94,8 +93,6 @@ class _NutritionState extends State<Nutrition> {
       setState(() {
         isLoading = false;
       });
-      // Handle the error if needed
-      print('Error: $error');
     });
   }
 

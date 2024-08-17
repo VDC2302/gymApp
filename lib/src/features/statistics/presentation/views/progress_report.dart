@@ -72,17 +72,6 @@ class _ProgressReportState extends State<ProgressReport> {
     }
   }
 
-  Future<bool> _hasDataForDate(String date, String type) async {
-    try {
-      final trackingValues = await apiService.getTrackingValues(type.toUpperCase());
-
-      return trackingValues.any((data) => data['date'] == date);
-    } catch (e) {
-      print('Failed to check data for date: $e');
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(onRefresh: _getTrackingValues,
@@ -329,7 +318,6 @@ class _ProgressReportState extends State<ProgressReport> {
             id: id, // Pass id here
             onSave: (newValue, newDate) async {
               if (id != null) {
-                print('id: $id\nnew value: $newValue\ntype: $type\nnew date: $newDate');
                 await apiService.editTrackingValue(id, newValue, type, newDate);
               } else {
                 await apiService.postTrackingValue(newValue, type, newDate);

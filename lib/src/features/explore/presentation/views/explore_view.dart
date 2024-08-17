@@ -2,12 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:gymApp/src/features/explore/presentation/views/explore_workouts.dart';
 import 'package:gymApp/src/features/explore/presentation/views/my_workout.dart';
 import 'package:gymApp/src/features/explore/presentation/views/nutrition.dart';
-import 'package:gymApp/src/features/navigation/routes.dart';
 import 'package:gymApp/src/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gymApp/src/features/explore/presentation/views/NutritionForm.dart';
+import 'package:gymApp/src/features/explore/presentation/views/nutrition_form.dart';
 
 class ExploreView extends HookWidget {
   const ExploreView({super.key});
@@ -17,14 +16,6 @@ class ExploreView extends HookWidget {
     final pageController = usePageController();
     final isFirstPage = useState<bool>(true);
     final isLastPage = useState<bool>(false);
-
-    void onNutritionFormSubmit() {
-      // Trigger data fetch or any other action you need on form submission
-      final state = pageController.page == 2
-          ? const Nutrition(key: PageStorageKey('Nutrition')).createState()
-          : null;
-      state?.fetchData();
-    }
 
     return Scaffold(
       backgroundColor: appColors.lightGrey,
@@ -143,7 +134,7 @@ class ExploreView extends HookWidget {
                               maxWidth: 500, // Adjust the width as needed
                               maxHeight: MediaQuery.of(context).size.height * 0.5, // Adjust the height as needed
                             ),
-                            child: NutritionForm(),
+                            child: const NutritionForm(),
                           ),
                         ),
                       );

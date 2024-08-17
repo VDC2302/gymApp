@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:gymApp/src/shared/api/api_service.dart';
 import 'package:intl/intl.dart';
@@ -31,7 +30,6 @@ class _LogsState extends State<Logs> {
     chestData = apiService.graphTrackingData('CHEST');
     waistData = apiService.graphTrackingData('WAIST');
     hipsData = apiService.graphTrackingData('HIPS');
-
   }
 
 
@@ -55,8 +53,8 @@ class _LogsState extends State<Logs> {
   Widget _buildChart(Future<List<TrackingData>> dataFuture, String title) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Container(
-        height: 300, // Adjust the height as needed
+      child: SizedBox(
+        height: 300,
         child: FutureBuilder<List<TrackingData>>(
           future: dataFuture,
           builder: (context, snapshot) {
@@ -64,9 +62,9 @@ class _LogsState extends State<Logs> {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No data available'));
             } else {
+              final data = snapshot.data ?? [];
+
               return SfCartesianChart(
                 primaryXAxis: const CategoryAxis(
                   labelRotation: 45,
@@ -76,20 +74,26 @@ class _LogsState extends State<Logs> {
                 ),
                 title: ChartTitle(
                   text: title,
-                  textStyle: TextStyle(fontSize: 14), // Smaller chart title
+                  textStyle: const TextStyle(fontSize: 14),
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries>[
                   BarSeries<TrackingData, String>(
-                    dataSource: snapshot.data!,
+                    dataSource: data,
                     xValueMapper: (TrackingData data, _) {
-                      DateTime parsedDate = DateTime.parse(data.createdDate); // Parse the full date
-                      String formattedDate = DateFormat('MM-dd').format(parsedDate); // Format to MM-dd
+                      DateTime parsedDate = DateTime.parse(data.createdDate);
+                      String formattedDate = DateFormat('MM-dd').format(
+                          parsedDate);
                       return formattedDate; // Return the formatted date string
                     },
                     yValueMapper: (TrackingData data, _) => data.value,
                     name: title,
                     color: Colors.blue,
+                    // Render a placeholder bar if there's no data
+                    emptyPointSettings: const EmptyPointSettings(
+                      mode: EmptyPointMode.zero,
+                      color: Colors.grey,
+                    ),
                   )
                 ],
               );

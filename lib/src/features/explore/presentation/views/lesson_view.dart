@@ -189,7 +189,7 @@ class _LessonViewState extends State<LessonView>{
                     },
                     child: const Text('Select File'),
                   ),
-                  SizedBox(height: 8.0), // Space between button and file name text
+                  const SizedBox(height: 8.0), // Space between button and file name text
                   Text(selectedFileName), // Display the selected file name
                 ],
               ),
@@ -219,13 +219,11 @@ class _LessonViewState extends State<LessonView>{
                         );
                         await _loadLessons();
                       } catch (e) {
-                        print('Upload failed: $e');
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Upload failed: $e')),
                         );
                       }
                     } else {
-                      print('Please fill all fields and select a file.');
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please fill all fields and select a file.')),
                       );
