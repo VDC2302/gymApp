@@ -33,6 +33,8 @@ class Token {
 }
 
 class ApiService {
+  static const baseUrl = "http://192.168.43.201:8080";
+  
   Future<void> storeToken(Token token) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('jwtToken', token.jwtToken);
@@ -78,7 +80,7 @@ class ApiService {
         data['gender'] = gender;
       }
       final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/common/registration'),
+          Uri.parse('$baseUrl/api/v1/common/registration'),
           headers: {
             'Content-Type': 'application/json'
           },
@@ -106,7 +108,7 @@ class ApiService {
     try {
       var data = {'username': username, 'password': password};
       final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/common/authenticate'),
+          Uri.parse('$baseUrl/api/v1/common/authenticate'),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -145,7 +147,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile/is-target'),
+        Uri.parse('$baseUrl/api/v1/user/profile/is-target'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
@@ -178,7 +180,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+        Uri.parse('$baseUrl/api/v1/user/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token.jwtToken}'
@@ -196,7 +198,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+        Uri.parse('$baseUrl/api/v1/user/profile'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}'
         },);
@@ -216,7 +218,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.put(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/profile'),
+        Uri.parse('$baseUrl/api/v1/user/profile'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}'
         },);
@@ -233,7 +235,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/type'),
+        Uri.parse('$baseUrl/api/v1/user/progression/type'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
@@ -256,7 +258,7 @@ class ApiService {
       if (token != null) {
         var data = {'value': value, 'trackingType': trackingType, 'createdDate': date};
         final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          Uri.parse('$baseUrl/api/v1/user/progression'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}',
@@ -281,7 +283,7 @@ class ApiService {
       final token = await getToken();
       if (token != null) {
         final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          Uri.parse('$baseUrl/api/v1/user/progression'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}',
@@ -311,7 +313,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
+          Uri.parse('$baseUrl/api/v1/user/progression/latest/list'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -338,7 +340,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression/latest/list'),
+          Uri.parse('$baseUrl/api/v1/user/progression/latest/list'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -361,7 +363,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          Uri.parse('$baseUrl/api/v1/user/progression'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -397,7 +399,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.put(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/progression'),
+          Uri.parse('$baseUrl/api/v1/user/progression'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}'
@@ -419,7 +421,7 @@ class ApiService {
       String programType = type.toLowerCase();
       final response = await http.get(
         Uri.parse(
-            'http://10.0.2.2:8080/api/v1/user/training-program/$programType?page=$pageNumber$queryParams'),
+            '$baseUrl/api/v1/user/training-program/$programType?page=$pageNumber$queryParams'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}'
         },
@@ -442,7 +444,7 @@ class ApiService {
     if (token != null) {
       final response = await http.get(
           Uri.parse(
-              'http://10.0.2.2:8080/api/v1/user/training-program/online?page=$pageNumber'),
+              '$baseUrl/api/v1/user/training-program/online?page=$pageNumber'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -465,7 +467,7 @@ class ApiService {
       String programType = type.toLowerCase();
       final response = await http.get(
           Uri.parse(
-              'http://10.0.2.2:8080/api/v1/user/training-program/user/$programType?page=$pageNumber$queryParams'),
+              '$baseUrl/api/v1/user/training-program/user/$programType?page=$pageNumber$queryParams'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -485,7 +487,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.put(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/training-program/save/$id'),
+          Uri.parse('$baseUrl/api/v1/user/training-program/save/$id'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -501,7 +503,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
+        Uri.parse('$baseUrl/api/v1/user/nutrition/today'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
@@ -526,7 +528,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/today'),
+        Uri.parse('$baseUrl/api/v1/user/nutrition/today'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}',
         },
@@ -558,7 +560,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition'),
+          Uri.parse('$baseUrl/api/v1/user/nutrition'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}'
@@ -577,7 +579,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.get(
-          Uri.parse('http://10.0.2.2:8080/api/v1/user/nutrition/this-week'),
+          Uri.parse('$baseUrl/api/v1/user/nutrition/this-week'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -596,7 +598,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/api/v1/user/history'),
+        Uri.parse('$baseUrl/api/v1/user/history'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token.jwtToken}'
@@ -626,7 +628,7 @@ class ApiService {
     };
     if (token != null) {
       final response = await http.post(
-          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program'),
+          Uri.parse('$baseUrl/api/v1/admin/training-program'),
           headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token.jwtToken}'
@@ -652,7 +654,7 @@ class ApiService {
     };
     if (token != null) {
       final response = await http.put(
-          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program'),
+          Uri.parse('$baseUrl/api/v1/admin/training-program'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}'
@@ -675,7 +677,7 @@ class ApiService {
       String programType = type.toLowerCase();
       final response = await http.get(
         Uri.parse(
-            'http://10.0.2.2:8080/api/v1/admin/training-program/$programType?page=$pageNumber$queryParams'),
+            '$baseUrl/api/v1/admin/training-program/$programType?page=$pageNumber$queryParams'),
         headers: {
           'Authorization': 'Bearer ${token.jwtToken}'
         },
@@ -698,7 +700,7 @@ class ApiService {
     if (token != null) {
       final response = await http.get(
           Uri.parse(
-              'http://10.0.2.2:8080/api/v1/admin/training-program/online?page=$pageNumber'),
+              '$baseUrl/api/v1/admin/training-program/online?page=$pageNumber'),
           headers: {
             'Authorization': 'Bearer ${token.jwtToken}'
           });
@@ -717,7 +719,7 @@ class ApiService {
     final token = await getToken();
 
     if (token != null) {
-      final uri = Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program/add-lesson');
+      final uri = Uri.parse('$baseUrl/api/v1/admin/training-program/add-lesson');
       final request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer ${token.jwtToken}'
         ..fields['programId'] = programId.toString()
@@ -751,7 +753,7 @@ class ApiService {
 
     if (token != null) {
       final response = await http.delete(
-          Uri.parse('http://10.0.2.2:8080/api/v1/admin/training-program/delete-lesson/$id'),
+          Uri.parse('$baseUrl/api/v1/admin/training-program/delete-lesson/$id'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${token.jwtToken}'
