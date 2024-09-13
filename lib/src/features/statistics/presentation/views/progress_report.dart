@@ -220,7 +220,7 @@ class _ProgressReportState extends State<ProgressReport> {
     required String title,
     required TextEditingController valueController,
     required String date,
-    required int? id, // Add this parameter
+    required int? id,
     required Future<void> Function(String value, String date) onSave,
   }) {
     return InkWell(
@@ -315,9 +315,9 @@ class _ProgressReportState extends State<ProgressReport> {
             title: title,
             valueController: controller,
             date: date,
-            id: id, // Pass id here
+            id: id,
             onSave: (newValue, newDate) async {
-              if (id != null) {
+              if (newDate == date && id != null) {
                 await apiService.editTrackingValue(id, newValue, type, newDate);
               } else {
                 await apiService.postTrackingValue(newValue, type, newDate);
