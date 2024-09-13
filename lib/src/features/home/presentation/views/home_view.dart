@@ -51,10 +51,20 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _getFoodCalories() async {
+    // try {
+    //   final foodCalories = await apiService.getUserTodayCalories();
+    //   setState(() {
+    //     _foodCalories = foodCalories['dailyCalories'];
+    //   });
+    // } catch (e) {
+    //   setState(() {
+    //     _errorMessage = 'Failed to load calories: $e';
+    //   });
+    // }
     try {
-      final foodCalories = await apiService.getUserTodayCalories();
+      final foodCalories = await apiService.getThisWeekNutrition();
       setState(() {
-        _foodCalories = foodCalories['dailyCalories'];
+        _foodCalories = foodCalories['calories'];
       });
     } catch (e) {
       setState(() {

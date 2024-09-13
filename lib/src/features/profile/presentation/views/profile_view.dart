@@ -123,6 +123,7 @@ class ProfileView extends HookWidget {
     final birthYear = data?['birthYear'] ?? 'N/A';
     final height = data?['height'] ?? 'N/A';
     final weight = data?['weight'] ?? 'N/A';
+    final activity = data?['activity'] ?? 'N/A';
 
     return Container(
       padding: EdgeInsets.all(15.dx),
@@ -179,7 +180,7 @@ class ProfileView extends HookWidget {
           Divider(color: appColors.grey.withOpacity(0.3)),
           SizedBox(height: 5.dy), // Add spacing
           Text(
-            'Height: $height cm \t\t\t\t\t Weight : $weight kg',
+            'Height: $height cm',
             style: GoogleFonts.lato(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -239,7 +240,7 @@ class ProfileView extends HookWidget {
   }
 
   void _editTarget(BuildContext context) {
-    Navigator.pushNamed(context, AuthRoutes.onboarding); // Replace with your actual route name
+    Navigator.pushNamed(context, AuthRoutes.onboarding);
   }
 
   void _logout(BuildContext context) {

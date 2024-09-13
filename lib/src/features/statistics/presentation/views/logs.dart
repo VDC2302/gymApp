@@ -13,7 +13,6 @@ class Logs extends StatefulWidget {
 class _LogsState extends State<Logs> {
   bool isLoading = false;
   List<TrackingData> latestData = [];
-  final String trackingType = 'HIPS'; // Example tracking type
   ApiService apiService = ApiService();
   late Future<List<TrackingData>> caloriesData;
   late Future<List<TrackingData>> weightData;
